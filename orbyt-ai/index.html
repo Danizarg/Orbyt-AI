@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbyt AI — AI for Local Business</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f6f3;
+    --bg-tertiary: #f0efe9;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b66;
+    --text-tertiary: #9e9e98;
+    --border: rgba(0,0,0,0.08);
+    --border-md: rgba(0,0,0,0.14);
+    --green: #1D9E75;
+    --green-bg: #E1F5EE;
+    --green-text: #0F6E56;
+    --blue: #378ADD;
+    --blue-bg: #E6F1FB;
+    --blue-text: #185FA5;
+    --amber: #EF9F27;
+    --amber-bg: #FAEEDA;
+    --amber-text: #854F0B;
+    --coral: #D85A30;
+    --coral-bg: #FAECE7;
+    --coral-text: #993C1D;
+    --pink: #D4537E;
+    --pink-bg: #FBEAF0;
+    --pink-text: #993556;
+    --purple: #7F77DD;
+    --purple-bg: #EEEDFE;
+    --purple-text: #534AB7;
+    --gray: #888780;
+    --gray-bg: #F1EFE8;
+    --gray-text: #5F5E5A;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg-tertiary); color: var(--text-primary); font-size: 14px; height: 100vh; display: flex; flex-direction: column; }
+
+  /* TOP NAV */
+  .topnav { height: 48px; background: var(--bg-primary); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; flex-shrink: 0; }
+  .topnav-logo { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+  .topnav-logo span { color: var(--green); }
+  .topnav-spacer { flex: 1; }
+  .topnav-user { display: flex; align-items: center; gap: 8px; }
+  .topnav-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--green-bg); color: var(--green-text); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+  .topnav-name { font-size: 13px; color: var(--text-secondary); }
+  .view-toggle { display: flex; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); overflow: hidden; }
+  .vtbtn { padding: 5px 14px; font-size: 12px; font-family: var(--font); background: none; border: none; cursor: pointer; color: var(--text-secondary); font-weight: 500; transition: all 0.15s; }
+  .vtbtn.active { background: var(--bg-secondary); color: var(--text-primary); }
+
+  /* LAYOUT */
+  .layout { display: flex; flex: 1; overflow: hidden; }
+  .sidebar { width: 200px; background: var(--bg-primary); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .main { flex: 1; overflow-y: auto; }
+
+  /* SIDEBAR */
+  .nav-section { font-size: 10px; color: var(--text-tertiary); padding: 14px 16px 4px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 7px 12px; margin: 1px 6px; border-radius: var(--radius-md); cursor: pointer; font-size: 13px; color: var(--text-secondary); transition: background 0.12s; user-select: none; }
+  .nav-item:hover { background: var(--bg-secondary); }
+  .nav-item.active { background: var(--bg-secondary); color: var(--text-primary); font-weight: 500; }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; font-size: 10px; font-weight: 600; background: var(--coral-bg); color: var(--coral-text); padding: 1px 6px; border-radius: 10px; }
+
+  /* PAGE HEADER */
+  .page-header { padding: 20px 24px 0; display: flex; align-items: flex-start; justify-content: space-between; }
+  .page-title { font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+  .page-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 3px; }
+  .status-pill { font-size: 11px; padding: 4px 12px; border-radius: 20px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .status-pill.active { background: var(--green-bg); color: var(--green-text); }
+  .status-pill.paused { background: var(--amber-bg); color: var(--amber-text); }
+
+  /* METRICS */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px 24px; }
+  .metric { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 14px 16px; }
+  .metric-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 26px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.5px; font-family: var(--font-mono); }
+  .metric-delta { font-size: 11px; margin-top: 4px; font-weight: 500; }
+  .metric-delta.up { color: var(--green-text); }
+  .metric-delta.neutral { color: var(--text-tertiary); }
+
+  /* CARDS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 0 24px 16px; }
+  .card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+  .card-title { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+
+  /* CHANNEL ROWS */
+  .ch-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .ch-row:last-child { border-bottom: none; }
+  .ch-icon { width: 30px; height: 30px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .ch-name { font-size: 13px; color: var(--text-primary); flex: 1; }
+  .ch-count { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); }
+  .ch-bar-wrap { width: 56px; height: 4px; background: var(--border); border-radius: 2px; }
+  .ch-bar { height: 4px; border-radius: 2px; }
+
+  /* FEED */
+  .feed-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .feed-body { flex: 1; min-width: 0; }
+  .feed-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .feed-msg { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .feed-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; font-family: var(--font-mono); }
+
+  /* AI REPLY COMPOSER */
+  .composer { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+  .composer-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .composer-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
+  .channel-select { font-size: 12px; font-family: var(--font); border: 0.5px solid var(--border-md); border-radius: var(--radius-sm); padding: 4px 8px; background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; }
+  .composer-input { width: 100%; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); padding: 10px 12px; font-size: 13px; font-family: var(--font); color: var(--text-primary); background: var(--bg-secondary); resize: none; min-height: 64px; outline: none; transition: border 0.15s; }
+  .composer-input:focus { border-color: var(--green); }
+  .composer-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .btn { padding: 7px 14px; border-radius: var(--radius-md); font-size: 12px; font-family: var(--font); font-weight: 500; cursor: pointer; border: 0.5px solid var(--border-md); background: none; color: var(--text-secondary); transition: all 0.15s; }
+  .btn:hover { background: var(--bg-secondary); }
+  .btn.primary { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn.primary:hover { background: var(--green-text); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .ai-output { background: var(--green-bg); border-radius: var(--radius-md); padding: 12px; margin-top: 10px; font-size: 13px; color: var(--green-text); line-height: 1.6; display: none; }
+  .ai-output.visible { display: block; }
+  .ai-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--green); margin-bottom: 6px; }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  .spinner.visible { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* CLIENT TABLE (admin) */
+  .client-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .client-row:last-child { border-bottom: none; }
+  .client-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .client-info { flex: 1; }
+  .client-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .client-type { font-size: 11px; color: var(--text-tertiary); }
+  .health-wrap { width: 80px; }
+  .health-label { font-size: 10px; color: var(--text-tertiary); margin-bottom: 3px; font-family: var(--font-mono); }
+  .health-bar { height: 3px; border-radius: 2px; }
+  .client-msgs { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); width: 56px; text-align: right; }
+  .client-revenue { font-size: 12px; font-weight: 500; color: var(--text-primary); font-family: var(--font-mono); width: 52px; text-align: right; }
+  .dot-status { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* SETTINGS SECTION */
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+  .settings-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+  .toggle { width: 36px; height: 20px; border-radius: 10px; background: var(--border-md); position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+  .toggle.on { background: var(--green); }
+  .toggle::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; }
+  .toggle.on::after { transform: translateX(16px); }
+  .connect-btn { font-size: 11px; padding: 4px 10px; border-radius: var(--radius-sm); border: 0.5px solid var(--border-md); background: none; color: var(--text-secondary); cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+  .connect-btn:hover { background: var(--bg-secondary); }
+  .connect-btn.connected { background: var(--green-bg); color: var(--green-text); border-color: transparent; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* NOTIFICATION TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text-primary); color: #fff; padding: 10px 16px; border-radius: var(--radius-md); font-size: 13px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 100; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="topnav-logo">Orbyt <span>AI</span></div>
+  <div class="view-toggle">
+    <button class="vtbtn active" onclick="switchView('client')">Client view</button>
+    <button class="vtbtn" onclick="switchView('admin')">Admin view</button>
+  </div>
+  <div class="topnav-spacer"></div>
+  <div class="topnav-user">
+    <div class="topnav-avatar" id="user-initials">SR</div>
+    <div class="topnav-name" id="user-name">Salon Rosa</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR CLIENT -->
+  <div class="sidebar" id="sidebar-client">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showSection('dashboard')"><div class="nav-dot" style="background:var(--green)"></div>Dashboard</div>
+    <div class="nav-item" onclick="showSection('inbox')"><div class="nav-dot" style="background:var(--blue)"></div>Inbox <span class="nav-badge" id="inbox-badge">3</span></div>
+    <div class="nav-item" onclick="showSection('compose')"><div class="nav-dot" style="background:var(--purple)"></div>AI Composer</div>
+    <div class="nav-item" onclick="showSection('bookings')"><div class="nav-dot" style="background:var(--amber)"></div>Bookings</div>
+    <div class="nav-section">Channels</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--green)"></div>WhatsApp</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--blue)"></div>Email</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--pink)"></div>Instagram</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--coral)"></div>Phone</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--gray)"></div>Chat widget</div>
+    <div class="nav-section">Settings</div>
+    <div class="nav-item" onclick="showSection('settings')"><div class="nav-dot"></div>AI behaviour</div>
+    <div class="nav-item" onclick="showSection('connect')"><div class="nav-dot"></div>Connections</div>
+  </div>
+
+  <!-- SIDEBAR ADMIN -->
+  <div class="sidebar" id="sidebar-admin" style="display:none">
+    <div class="nav-section">Manage</div>
+    <div class="nav-item active" onclick="showAdminSection('clients')"><div class="nav-dot" style="background:var(--green)"></div>All clients</div>
+    <div class="nav-item" onclick="showAdminSection('revenue')"><div class="nav-dot" style="background:var(--amber)"></div>Revenue</div>
+    <div class="nav-item" onclick="showAdminSection('usage')"><div class="nav-dot" style="background:var(--blue)"></div>Usage</div>
+    <div class="nav-section">Tools</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--coral)"></div>Onboarding</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--pink)"></div>Support</div>
+    <div class="nav-section">Settings</div>
+    <div class="nav-item"><div class="nav-dot"></div>Billing</div>
+    <div class="nav-item"><div class="nav-dot"></div>API keys</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main" id="main-content">
+
+    <!-- ===== CLIENT: DASHBOARD ===== -->
+    <div id="section-dashboard" class="view active">
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="dash-biz-name">Salon Rosa — Dashboard</div>
+          <div class="page-sub" id="dash-date"></div>
+        </div>
+        <span class="status-pill active">AI active</span>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Messages handled</div>
+          <div class="metric-value" id="m-msgs">142</div>
+          <div class="metric-delta up">+18 today</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Bookings made</div>
+          <div class="metric-value" id="m-bookings">24</div>
+          <div class="metric-delta up">+3 today</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Missed replies</div>
+          <div class="metric-value" id="m-missed">0</div>
+          <div class="metric-delta neutral">down from 11</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Reviews sent</div>
+          <div class="metric-value" id="m-reviews">9</div>
+          <div class="metric-delta up">+2 today</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Channel activity</div>
+          <div class="ch-row">
+            <div class="ch-icon" style="background:var(--green-bg);color:var(--green-text);">WA</div>
+            <div class="ch-name">WhatsApp</div>
+            <div class="ch-count" id="ch-wa">68</div>
+            <div class="ch-bar-wrap"><div class="ch-bar" style="width:100%;background:var(--green);"></div></div>
+          </div>
+          <div class="ch-row">
+            <div class="ch-icon" style="background:var(--blue-bg);color:var(--blue-text);">EM</div>
+            <div class="ch-name">Email</div>
+            <div class="ch-count" id="ch-em">34</div>
+            <div class="ch-bar-wrap"><div class="ch-bar" style="width:50%;background:var(--blue);"></div></div>
+          </div>
+          <div class="ch-row">
+            <div class="ch-icon" style="background:var(--pink-bg);color:var(--pink-text);">IG</div>
+            <div class="ch-name">Instagram</div>
+            <div class="ch-count" id="ch-ig">28</div>
+            <div class="ch-bar-wrap"><div class="ch-bar" style="width:41%;background:var(--pink);"></div></div>
+          </div>
+          <div class="ch-row">
+            <div class="ch-icon" style="background:var(--coral-bg);color:var(--coral-text);">PH</div>
+            <div class="ch-name">Phone</div>
+            <div class="ch-count" id="ch-ph">12</div>
+            <div class="ch-bar-wrap"><div class="ch-bar" style="width:18%;background:var(--coral);"></div></div>
+          </div>
+          <div class="ch-row">
+            <div class="ch-icon" style="background:var(--gray-bg);color:var(--gray-text);">WB</div>
+            <div class="ch-name">Chat widget</div>
+            <div class="ch-count" id="ch-wb">8</div>
+            <div class="ch-bar-wrap"><div class="ch-bar" style="width:12%;background:var(--gray);"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Recent activity</div>
+          <div id="activity-feed">
+            <div class="feed-item">
+              <div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);">MG</div>
+              <div class="feed-body"><div class="feed-name">Maria G.</div><div class="feed-msg">Booking confirmed for Friday 3pm — hair colour</div></div>
+              <div class="feed-time">2m ago</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);">JL</div>
+              <div class="feed-body"><div class="feed-name">Jorge L.</div><div class="feed-msg">Asked about pricing — AI replied with full menu</div></div>
+              <div class="feed-time">14m ago</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-avatar" style="background:var(--pink-bg);color:var(--pink-text);">AN</div>
+              <div class="feed-body"><div class="feed-name">Ana N.</div><div class="feed-msg">Review request sent after appointment</div></div>
+              <div class="feed-time">1h ago</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-avatar" style="background:var(--coral-bg);color:var(--coral-text);">RP</div>
+              <div class="feed-body"><div class="feed-name">Rosa P.</div><div class="feed-msg">Missed call — AI texted back instantly</div></div>
+              <div class="feed-time">2h ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: AI COMPOSER ===== -->
+    <div id="section-compose" class="view">
+      <div class="page-header" style="margin-bottom:16px;">
+        <div>
+          <div class="page-title">AI Composer</div>
+          <div class="page-sub">Draft replies for any channel — powered by Claude AI</div>
+        </div>
+      </div>
+      <div style="padding: 0 24px 24px;">
+        <div class="composer">
+          <div class="composer-header">
+            <div class="composer-label">Draft a reply</div>
+            <select class="channel-select" id="compose-channel">
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
+              <option value="instagram">Instagram DM</option>
+              <option value="sms">SMS</option>
+            </select>
+          </div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">Paste the customer's message:</div>
+          <textarea class="composer-input" id="compose-input" placeholder="e.g. Hola, quería saber si tenéis cita disponible para el viernes por la tarde para un corte y color..."></textarea>
+          <div style="font-size:12px;color:var(--text-tertiary);margin:10px 0 6px;">Business context (optional):</div>
+          <textarea class="composer-input" id="compose-context" style="min-height:48px;" placeholder="e.g. We are a hair salon, open Mon-Sat 9am-7pm. Friday afternoons are usually busy."></textarea>
+          <div class="composer-actions">
+            <button class="btn primary" onclick="draftReply()" id="draft-btn">Draft AI reply</button>
+            <button class="btn" onclick="clearComposer()">Clear</button>
+            <div class="spinner" id="draft-spinner"></div>
+            <div style="flex:1;"></div>
+            <span style="font-size:11px;color:var(--text-tertiary);">Powered by Claude</span>
+          </div>
+          <div class="ai-output" id="ai-output">
+            <div class="ai-tag">AI draft</div>
+            <div id="ai-output-text"></div>
+            <div style="margin-top:10px;display:flex;gap:8px;">
+              <button class="btn" onclick="copyReply()">Copy reply</button>
+              <button class="btn" onclick="draftReply()">Regenerate</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+          <div class="card-title">Quick templates</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+            <button class="btn" style="text-align:left;padding:10px 12px;" onclick="useTemplate('booking_confirm')">
+              <div style="font-size:12px;font-weight:500;color:var(--text-primary);">Booking confirmation</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Confirm appointment details</div>
+            </button>
+            <button class="btn" style="text-align:left;padding:10px 12px;" onclick="useTemplate('review_request')">
+              <div style="font-size:12px;font-weight:500;color:var(--text-primary);">Review request</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Ask for a Google review</div>
+            </button>
+            <button class="btn" style="text-align:left;padding:10px 12px;" onclick="useTemplate('missed_call')">
+              <div style="font-size:12px;font-weight:500;color:var(--text-primary);">Missed call follow-up</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Reach out after missed call</div>
+            </button>
+            <button class="btn" style="text-align:left;padding:10px 12px;" onclick="useTemplate('price_inquiry')">
+              <div style="font-size:12px;font-weight:500;color:var(--text-primary);">Price inquiry reply</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Answer pricing questions</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: INBOX ===== -->
+    <div id="section-inbox" class="view">
+      <div class="page-header" style="margin-bottom:16px;">
+        <div>
+          <div class="page-title">Inbox</div>
+          <div class="page-sub">All channels in one place</div>
+        </div>
+        <span class="status-pill active">3 unread</span>
+      </div>
+      <div style="padding: 0 24px 24px;">
+        <div class="card">
+          <div class="card-title">All messages</div>
+          <div id="inbox-list">
+            <div class="feed-item" style="cursor:pointer;" onclick="openMessage(this,'Maria García','Hola, quería saber si tenéis disponibilidad el viernes por la tarde para un corte y color. Gracias!','WhatsApp','unread')">
+              <div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);font-weight:700;">MG</div>
+              <div class="feed-body"><div class="feed-name">Maria García <span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">WhatsApp</span> <span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:2px;">New</span></div><div class="feed-msg">Hola, quería saber si tenéis disponibilidad el viernes...</div></div>
+              <div class="feed-time">3m ago</div>
+            </div>
+            <div class="feed-item" style="cursor:pointer;" onclick="openMessage(this,'Jorge López','Good morning, I saw your Instagram post about the new hair treatments. Do you have any slots available this week?','Email','unread')">
+              <div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);font-weight:700;">JL</div>
+              <div class="feed-body"><div class="feed-name">Jorge López <span style="font-size:10px;background:var(--green-bg);color:var(--green-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span> <span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:2px;">New</span></div><div class="feed-msg">Good morning, I saw your Instagram post about the new...</div></div>
+              <div class="feed-time">22m ago</div>
+            </div>
+            <div class="feed-item" style="cursor:pointer;" onclick="openMessage(this,'Ana Navarro','Cuánto cuesta un tinte completo? También hacéis mechas?','Instagram','unread')">
+              <div class="feed-avatar" style="background:var(--pink-bg);color:var(--pink-text);font-weight:700;">AN</div>
+              <div class="feed-body"><div class="feed-name">Ana Navarro <span style="font-size:10px;background:var(--pink-bg);color:var(--pink-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Instagram</span> <span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:2px;">New</span></div><div class="feed-msg">Cuánto cuesta un tinte completo? También hacéis...</div></div>
+              <div class="feed-time">45m ago</div>
+            </div>
+            <div class="feed-item" style="cursor:pointer;opacity:0.7;" onclick="openMessage(this,'Rosa Pérez','Gracias por confirmar mi cita del jueves. Hasta entonces!','WhatsApp','read')">
+              <div class="feed-avatar" style="background:var(--coral-bg);color:var(--coral-text);font-weight:700;">RP</div>
+              <div class="feed-body"><div class="feed-name">Rosa Pérez <span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">WhatsApp</span></div><div class="feed-msg">Gracias por confirmar mi cita del jueves. Hasta...</div></div>
+              <div class="feed-time">2h ago</div>
+            </div>
+          </div>
+        </div>
+        <!-- Message detail panel -->
+        <div class="card" id="msg-detail" style="margin-top:12px;display:none;">
+          <div class="card-title" id="msg-detail-header">Message</div>
+          <div id="msg-detail-body" style="font-size:13px;color:var(--text-primary);line-height:1.6;padding:8px 0 12px;border-bottom:0.5px solid var(--border);"></div>
+          <div style="margin-top:12px;">
+            <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">AI-suggested reply:</div>
+            <div id="msg-ai-reply" style="background:var(--green-bg);border-radius:var(--radius-md);padding:10px 12px;font-size:13px;color:var(--green-text);line-height:1.6;min-height:40px;"></div>
+            <div class="spinner" id="msg-spinner" style="margin-top:8px;"></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn primary" onclick="sendReply()">Send reply</button>
+              <button class="btn" onclick="copyMsgReply()">Copy</button>
+              <button class="btn" onclick="regenerateMsgReply()">Regenerate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: SETTINGS ===== -->
+    <div id="section-settings" class="view">
+      <div class="page-header" style="margin-bottom:16px;">
+        <div><div class="page-title">AI behaviour</div><div class="page-sub">Control how your AI assistant responds</div></div>
+      </div>
+      <div style="padding:0 24px 24px;">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="card-title">Response settings</div>
+          <div class="settings-row">
+            <div><div class="settings-label">Auto-reply to WhatsApp</div><div class="settings-sub">AI replies immediately to all incoming messages</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Auto-reply to Email</div><div class="settings-sub">AI drafts and sends email replies automatically</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Auto-reply to Instagram DMs</div><div class="settings-sub">AI responds to direct messages on Instagram</div></div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Missed call text-back</div><div class="settings-sub">Send automatic SMS when a call is missed</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Review requests</div><div class="settings-sub">Auto-send Google review link after appointments</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Business information</div>
+          <div style="display:grid;gap:10px;margin-top:4px;">
+            <div><div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">Business name</div><input style="width:100%;padding:8px 10px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);background:var(--bg-secondary);color:var(--text-primary);outline:none;" value="Salon Rosa"></div>
+            <div><div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">Business hours</div><input style="width:100%;padding:8px 10px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);background:var(--bg-secondary);color:var(--text-primary);outline:none;" value="Mon-Sat 9am-7pm, closed Sundays"></div>
+            <div><div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">AI tone of voice</div>
+            <select style="width:100%;padding:8px 10px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);background:var(--bg-secondary);color:var(--text-primary);outline:none;">
+              <option>Friendly and warm</option><option>Professional and formal</option><option>Casual and fun</option>
+            </select></div>
+            <div><div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px;">Services / price list (AI will use this to answer questions)</div><textarea style="width:100%;padding:8px 10px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);font-size:13px;font-family:var(--font);background:var(--bg-secondary);color:var(--text-primary);outline:none;resize:none;min-height:80px;" placeholder="e.g. Haircut €25, Colour €60, Highlights €80, Blow dry €20..."></textarea></div>
+            <button class="btn primary" style="width:fit-content;" onclick="showToast('Settings saved!')">Save settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: CONNECTIONS ===== -->
+    <div id="section-connect" class="view">
+      <div class="page-header" style="margin-bottom:16px;">
+        <div><div class="page-title">Connections</div><div class="page-sub">Connect your channels to the AI</div></div>
+      </div>
+      <div style="padding:0 24px 24px;">
+        <div class="card">
+          <div class="card-title">Channel connections</div>
+          <div class="settings-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ch-icon" style="background:var(--green-bg);color:var(--green-text);width:32px;height:32px;">WA</div>
+              <div><div class="settings-label">WhatsApp Business</div><div class="settings-sub">Via WATI API — handles incoming & outgoing messages</div></div>
+            </div>
+            <button class="connect-btn connected">Connected</button>
+          </div>
+          <div class="settings-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ch-icon" style="background:var(--blue-bg);color:var(--blue-text);width:32px;height:32px;">EM</div>
+              <div><div class="settings-label">Email (Gmail / any)</div><div class="settings-sub">Connect via Gmail API or IMAP/SMTP forwarding</div></div>
+            </div>
+            <button class="connect-btn connected">Connected</button>
+          </div>
+          <div class="settings-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ch-icon" style="background:var(--pink-bg);color:var(--pink-text);width:32px;height:32px;">IG</div>
+              <div><div class="settings-label">Instagram DMs</div><div class="settings-sub">Via Meta Business API through ManyChat</div></div>
+            </div>
+            <button class="connect-btn" onclick="this.textContent='Connecting...';setTimeout(()=>this.className='connect-btn connected',1200);this.textContent='Connected'">Connect</button>
+          </div>
+          <div class="settings-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ch-icon" style="background:var(--coral-bg);color:var(--coral-text);width:32px;height:32px;">PH</div>
+              <div><div class="settings-label">Phone / SMS</div><div class="settings-sub">Via Twilio or Bland.ai for calls and texts</div></div>
+            </div>
+            <button class="connect-btn" onclick="this.className='connect-btn connected';this.textContent='Connected'">Connect</button>
+          </div>
+          <div class="settings-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ch-icon" style="background:var(--gray-bg);color:var(--gray-text);width:32px;height:32px;">WB</div>
+              <div><div class="settings-label">Website chat widget</div><div class="settings-sub">Embed a snippet on your website — copy code below</div></div>
+            </div>
+            <button class="connect-btn connected">Active</button>
+          </div>
+          <div class="settings-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="ch-icon" style="background:var(--amber-bg);color:var(--amber-text);width:32px;height:32px;">CA</div>
+              <div><div class="settings-label">Calendly / Booking</div><div class="settings-sub">Sync appointments and auto-confirm bookings</div></div>
+            </div>
+            <button class="connect-btn connected">Connected</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px;">
+          <div class="card-title">Widget embed code</div>
+          <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);margin-top:4px;line-height:1.7;">&lt;script src="https://orbyt-ai.app/widget.js"<br>&nbsp;&nbsp;data-client="salon-rosa"<br>&nbsp;&nbsp;data-color="#1D9E75"&gt;<br>&lt;/script&gt;</div>
+          <button class="btn" style="margin-top:10px;" onclick="showToast('Code copied!')">Copy embed code</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT: BOOKINGS ===== -->
+    <div id="section-bookings" class="view">
+      <div class="page-header" style="margin-bottom:16px;">
+        <div><div class="page-title">Bookings</div><div class="page-sub">Appointments managed by your AI</div></div>
+      </div>
+      <div style="padding:0 24px 24px;">
+        <div class="card">
+          <div class="card-title">Upcoming appointments</div>
+          <div class="feed-item"><div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);">MG</div><div class="feed-body"><div class="feed-name">Maria García — Hair colour + cut</div><div class="feed-msg">Friday 2 May · 3:00 PM · Booked via WhatsApp</div></div><span style="font-size:11px;background:var(--green-bg);color:var(--green-text);padding:3px 8px;border-radius:10px;font-weight:600;">Confirmed</span></div>
+          <div class="feed-item"><div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);">JL</div><div class="feed-body"><div class="feed-name">Jorge López — Haircut</div><div class="feed-msg">Saturday 3 May · 11:00 AM · Booked via Email</div></div><span style="font-size:11px;background:var(--green-bg);color:var(--green-text);padding:3px 8px;border-radius:10px;font-weight:600;">Confirmed</span></div>
+          <div class="feed-item"><div class="feed-avatar" style="background:var(--amber-bg);color:var(--amber-text);">CP</div><div class="feed-body"><div class="feed-name">Carlos Pérez — Beard trim</div><div class="feed-msg">Monday 5 May · 10:30 AM · Booked via Chat widget</div></div><span style="font-size:11px;background:var(--amber-bg);color:var(--amber-text);padding:3px 8px;border-radius:10px;font-weight:600;">Pending</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN: CLIENTS ===== -->
+    <div id="section-admin-clients" class="view">
+      <div class="page-header">
+        <div><div class="page-title">All clients</div><div class="page-sub">Your agency overview</div></div>
+        <span class="status-pill active">6 active</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Total clients</div><div class="metric-value">6</div><div class="metric-delta up">+1 this month</div></div>
+        <div class="metric"><div class="metric-label">Monthly revenue</div><div class="metric-value">€1,740</div><div class="metric-delta up">+€290 MoM</div></div>
+        <div class="metric"><div class="metric-label">AI messages / mo</div><div class="metric-value">3,841</div><div class="metric-delta up">+12% vs last</div></div>
+        <div class="metric"><div class="metric-label">Avg health score</div><div class="metric-value">87%</div><div class="metric-delta up">+4pts</div></div>
+      </div>
+      <div style="padding:0 24px 24px;">
+        <div class="card">
+          <div class="card-title">Client overview</div>
+          <div id="admin-clients-list">
+            <div class="client-row">
+              <div class="client-avatar" style="background:var(--green-bg);color:var(--green-text);">SR</div>
+              <div class="client-info"><div class="client-name">Salon Rosa</div><div class="client-type">Hair salon · Starter</div></div>
+              <div class="health-wrap"><div class="health-label">92%</div><div class="health-bar" style="width:92%;background:var(--green);"></div></div>
+              <div class="client-msgs">842</div>
+              <div class="client-revenue">€290</div>
+              <div class="dot-status" style="background:var(--green);"></div>
+            </div>
+            <div class="client-row">
+              <div class="client-avatar" style="background:var(--blue-bg);color:var(--blue-text);">CF</div>
+              <div class="client-info"><div class="client-name">Clínica Fuentes</div><div class="client-type">Dental clinic · Growth</div></div>
+              <div class="health-wrap"><div class="health-label">88%</div><div class="health-bar" style="width:88%;background:var(--blue);"></div></div>
+              <div class="client-msgs">1,204</div>
+              <div class="client-revenue">€490</div>
+              <div class="dot-status" style="background:var(--green);"></div>
+            </div>
+            <div class="client-row">
+              <div class="client-avatar" style="background:var(--amber-bg);color:var(--amber-text);">TM</div>
+              <div class="client-info"><div class="client-name">Taller Moreno</div><div class="client-type">Auto repair · Local</div></div>
+              <div class="health-wrap"><div class="health-label">74%</div><div class="health-bar" style="width:74%;background:var(--amber);"></div></div>
+              <div class="client-msgs">612</div>
+              <div class="client-revenue">€290</div>
+              <div class="dot-status" style="background:var(--amber);"></div>
+            </div>
+            <div class="client-row">
+              <div class="client-avatar" style="background:var(--pink-bg);color:var(--pink-text);">BA</div>
+              <div class="client-info"><div class="client-name">Bar Andaluz</div><div class="client-type">Restaurant · Local</div></div>
+              <div class="health-wrap"><div class="health-label">95%</div><div class="health-bar" style="width:95%;background:var(--pink);"></div></div>
+              <div class="client-msgs">703</div>
+              <div class="client-revenue">€290</div>
+              <div class="dot-status" style="background:var(--green);"></div>
+            </div>
+            <div class="client-row">
+              <div class="client-avatar" style="background:var(--purple-bg);color:var(--purple-text);">FG</div>
+              <div class="client-info"><div class="client-name">Ferretería Gil</div><div class="client-type">Hardware store · Starter</div></div>
+              <div class="health-wrap"><div class="health-label">62%</div><div class="health-bar" style="width:62%;background:var(--purple);"></div></div>
+              <div class="client-msgs">280</div>
+              <div class="client-revenue">€190</div>
+              <div class="dot-status" style="background:var(--amber);"></div>
+            </div>
+            <div class="client-row">
+              <div class="client-avatar" style="background:var(--coral-bg);color:var(--coral-text);">PR</div>
+              <div class="client-info"><div class="client-name">Peluquería Roca</div><div class="client-type">Barber · Starter</div></div>
+              <div class="health-wrap"><div class="health-label">81%</div><div class="health-bar" style="width:81%;background:var(--coral);"></div></div>
+              <div class="client-msgs">200</div>
+              <div class="client-revenue">€190</div>
+              <div class="dot-status" style="background:var(--green);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN: REVENUE ===== -->
+    <div id="section-admin-revenue" class="view">
+      <div class="page-header" style="margin-bottom:16px;">
+        <div><div class="page-title">Revenue</div><div class="page-sub">Monthly recurring revenue overview</div></div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">MRR</div><div class="metric-value">€1,740</div><div class="metric-delta up">+20% MoM</div></div>
+        <div class="metric"><div class="metric-label">Projected ARR</div><div class="metric-value">€20,880</div><div class="metric-delta up">on track</div></div>
+        <div class="metric"><div class="metric-label">Avg per client</div><div class="metric-value">€290</div><div class="metric-delta neutral">stable</div></div>
+        <div class="metric"><div class="metric-label">Churn this mo</div><div class="metric-value">0</div><div class="metric-delta up">no churn</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// Replace this with your real Anthropic API key when deploying to Vercel
+// IMPORTANT: In production, never expose your API key in frontend code.
+// Use a Vercel serverless function (api/draft.js) to proxy Claude API calls.
+const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
+const API_URL = '/api/draft'; // Vercel serverless proxy endpoint
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentView = 'client';
+let currentMsgName = '';
+let currentMsgText = '';
+let currentMsgChannel = '';
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('dash-date').textContent = d.toLocaleDateString('en-GB', opts);
+});
+
+// ─── VIEW SWITCHING ───────────────────────────────────────────────────────────
+function switchView(v) {
+  currentView = v;
+  document.getElementById('sidebar-client').style.display = v === 'client' ? '' : 'none';
+  document.getElementById('sidebar-admin').style.display  = v === 'admin'  ? '' : 'none';
+  document.querySelectorAll('.vtbtn').forEach((b, i) =>
+    b.classList.toggle('active', (i === 0 && v === 'client') || (i === 1 && v === 'admin')));
+  if (v === 'client') showSection('dashboard');
+  else showAdminSection('clients');
+}
+
+function showSection(id) {
+  document.querySelectorAll('#main-content .view').forEach(el => el.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.querySelectorAll('#sidebar-client .nav-item').forEach(el => el.classList.remove('active'));
+  const items = document.querySelectorAll('#sidebar-client .nav-item');
+  const map = { dashboard: 0, inbox: 1, compose: 2, bookings: 3 };
+  if (map[id] !== undefined) items[map[id]].classList.add('active');
+}
+
+function showAdminSection(id) {
+  document.querySelectorAll('#main-content .view').forEach(el => el.classList.remove('active'));
+  document.getElementById('section-admin-' + id).classList.add('active');
+  document.querySelectorAll('#sidebar-admin .nav-item').forEach(el => el.classList.remove('active'));
+  const items = document.querySelectorAll('#sidebar-admin .nav-item');
+  const map = { clients: 0, revenue: 1, usage: 2 };
+  if (map[id] !== undefined) items[map[id]].classList.add('active');
+}
+
+// ─── AI COMPOSER ─────────────────────────────────────────────────────────────
+async function draftReply() {
+  const input = document.getElementById('compose-input').value.trim();
+  const context = document.getElementById('compose-context').value.trim();
+  const channel = document.getElementById('compose-channel').value;
+  if (!input) { showToast('Paste a customer message first'); return; }
+
+  const btn = document.getElementById('draft-btn');
+  const spinner = document.getElementById('draft-spinner');
+  const output = document.getElementById('ai-output');
+  btn.disabled = true;
+  spinner.classList.add('visible');
+  output.classList.remove('visible');
+
+  try {
+    const prompt = buildPrompt(input, context, channel);
+    const reply = await callClaude(prompt);
+    document.getElementById('ai-output-text').textContent = reply;
+    output.classList.add('visible');
+  } catch (e) {
+    showToast('Error connecting to AI — check API setup');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('visible');
+  }
+}
+
+function buildPrompt(customerMsg, context, channel) {
+  const channelNote = {
+    whatsapp: 'WhatsApp (keep it conversational, short, friendly, use line breaks not long paragraphs)',
+    email: 'Email (professional but warm, include a greeting and sign-off)',
+    instagram: 'Instagram DM (casual, short, emoji-friendly)',
+    sms: 'SMS (very short, max 2 sentences)'
+  }[channel] || 'WhatsApp';
+  return `You are a helpful AI assistant for a small local business. Draft a professional, friendly reply to this customer message.
+
+Channel: ${channelNote}
+${context ? `Business context: ${context}` : ''}
+
+Customer message:
+"${customerMsg}"
+
+Write only the reply text, nothing else. No preamble, no explanation.`;
+}
+
+async function callClaude(prompt) {
+  // In development, you can call the Anthropic API directly via a Vercel serverless function.
+  // See api/draft.js for the proxy implementation.
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, model: CLAUDE_MODEL })
+  });
+  if (!res.ok) throw new Error('API error ' + res.status);
+  const data = await res.json();
+  return data.reply;
+}
+
+function clearComposer() {
+  document.getElementById('compose-input').value = '';
+  document.getElementById('compose-context').value = '';
+  document.getElementById('ai-output').classList.remove('visible');
+}
+
+function copyReply() {
+  const text = document.getElementById('ai-output-text').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!'));
+}
+
+const templates = {
+  booking_confirm: { msg: 'Hi, I booked an appointment for next week. Can you confirm the details?', ctx: '' },
+  review_request: { msg: '[Post-appointment follow-up needed]', ctx: 'Customer just finished their appointment and left happy.' },
+  missed_call: { msg: '[Customer called but we missed it]', ctx: 'We missed a phone call and need to follow up.' },
+  price_inquiry: { msg: 'How much does a full colour treatment cost?', ctx: '' }
+};
+function useTemplate(t) {
+  const tpl = templates[t];
+  document.getElementById('compose-input').value = tpl.msg;
+  document.getElementById('compose-context').value = tpl.ctx;
+  showSection('compose');
+}
+
+// ─── INBOX ────────────────────────────────────────────────────────────────────
+async function openMessage(el, name, text, channel, status) {
+  currentMsgName = name;
+  currentMsgText = text;
+  currentMsgChannel = channel;
+  const detail = document.getElementById('msg-detail');
+  detail.style.display = '';
+  document.getElementById('msg-detail-header').textContent = name + ' · ' + channel;
+  document.getElementById('msg-detail-body').textContent = text;
+  document.getElementById('msg-ai-reply').textContent = '';
+  const spinner = document.getElementById('msg-spinner');
+  spinner.classList.add('visible');
+  try {
+    const prompt = buildPrompt(text, '', channel.toLowerCase());
+    const reply = await callClaude(prompt);
+    document.getElementById('msg-ai-reply').textContent = reply;
+  } catch(e) {
+    document.getElementById('msg-ai-reply').textContent = 'Could not load AI reply — check API setup.';
+  } finally {
+    spinner.classList.remove('visible');
+  }
+  // Mark as read
+  const badge = el.querySelector('span[style*="coral"]');
+  if (badge) badge.remove();
+  const count = document.querySelectorAll('#inbox-list .feed-item span[style*="coral"]').length;
+  document.getElementById('inbox-badge').textContent = count || '';
+}
+
+function copyMsgReply() {
+  navigator.clipboard.writeText(document.getElementById('msg-ai-reply').textContent)
+    .then(() => showToast('Reply copied!'));
+}
+
+async function regenerateMsgReply() {
+  document.getElementById('msg-ai-reply').textContent = '';
+  document.getElementById('msg-spinner').classList.add('visible');
+  try {
+    const prompt = buildPrompt(currentMsgText, '', currentMsgChannel.toLowerCase());
+    const reply = await callClaude(prompt);
+    document.getElementById('msg-ai-reply').textContent = reply;
+  } catch(e) {
+    document.getElementById('msg-ai-reply').textContent = 'Error regenerating reply.';
+  } finally {
+    document.getElementById('msg-spinner').classList.remove('visible');
+  }
+}
+
+function sendReply() {
+  showToast('Reply sent via ' + currentMsgChannel + '!');
+  document.getElementById('msg-detail').style.display = 'none';
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
