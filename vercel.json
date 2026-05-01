@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/api/draft",            "destination": "/api/draft.js" },
+    { "source": "/api/stats",            "destination": "/api/stats.js" },
+    { "source": "/api/connect-gmail",    "destination": "/api/connect-gmail.js" },
+    { "source": "/api/gmail-webhook",    "destination": "/api/gmail-webhook.js" },
+    { "source": "/api/whatsapp-webhook", "destination": "/api/whatsapp-webhook.js" },
+    { "source": "/",                     "destination": "/api/index.js" }
+  ]
+}
