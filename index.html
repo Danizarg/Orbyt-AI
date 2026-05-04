@@ -266,11 +266,11 @@
       <div class="nav-item" onclick="showSection('compose')"><div class="nav-dot" style="background:var(--purple)"></div>AI Composer</div>
       <div class="nav-item" onclick="showSection('bookings')"><div class="nav-dot" style="background:var(--amber)"></div>Bookings</div>
       <div class="nav-section">Channels</div>
-      <div class="nav-item"><div class="nav-dot" style="background:var(--green)"></div>WhatsApp</div>
-      <div class="nav-item"><div class="nav-dot" style="background:var(--blue)"></div>Email</div>
-      <div class="nav-item"><div class="nav-dot" style="background:var(--pink)"></div>Instagram</div>
-      <div class="nav-item"><div class="nav-dot" style="background:var(--coral)"></div>Phone</div>
-      <div class="nav-item"><div class="nav-dot" style="background:var(--gray)"></div>Chat widget</div>
+      <div class="nav-item" onclick="showSection('whatsapp')"><div class="nav-dot" style="background:var(--green)"></div>WhatsApp</div>
+      <div class="nav-item" onclick="showSection('email')"><div class="nav-dot" style="background:var(--blue)"></div>Email</div>
+      <div class="nav-item" onclick="showSection('instagram')"><div class="nav-dot" style="background:var(--pink)"></div>Instagram</div>
+      <div class="nav-item" onclick="showSection('phone')"><div class="nav-dot" style="background:var(--coral)"></div>Phone</div>
+      <div class="nav-item" onclick="showSection('widget')"><div class="nav-dot" style="background:var(--gray)"></div>Chat widget</div>
       <div class="nav-section">Settings</div>
       <div class="nav-item" onclick="showSection('ai-settings')"><div class="nav-dot"></div>AI behaviour</div>
       <div class="nav-item" onclick="showSection('connect')"><div class="nav-dot"></div>Connections</div>
@@ -461,6 +461,149 @@
           <div class="client-row"><div class="client-avatar" style="background:var(--blue-bg);color:var(--blue-text);">CF</div><div class="client-info"><div class="client-name">Clínica Fuentes</div><div class="client-type">Dental clinic · Growth</div></div><div class="health-wrap"><div class="health-label">88%</div><div class="health-bar" style="width:88%;background:var(--blue);"></div></div><div class="client-msgs">1,204</div><div class="client-revenue">€490</div><div class="dot-status" style="background:var(--green);"></div></div>
           <div class="client-row"><div class="client-avatar" style="background:var(--amber-bg);color:var(--amber-text);">TM</div><div class="client-info"><div class="client-name">Taller Moreno</div><div class="client-type">Auto repair · Local</div></div><div class="health-wrap"><div class="health-label">74%</div><div class="health-bar" style="width:74%;background:var(--amber);"></div></div><div class="client-msgs">612</div><div class="client-revenue">€290</div><div class="dot-status" style="background:var(--amber);"></div></div>
         </div></div>
+      </div>
+
+      <!-- WHATSAPP -->
+      <div id="section-whatsapp" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">WhatsApp</div><div class="page-sub">Manage your WhatsApp Business connection</div></div><span class="status-pill active">Connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Messages today</div><div class="metric-value">68</div><div class="metric-delta up">+12 vs yesterday</div></div>
+            <div class="metric"><div class="metric-label">Auto-replied</div><div class="metric-value">68</div><div class="metric-delta up">100% rate</div></div>
+            <div class="metric"><div class="metric-label">Avg response</div><div class="metric-value">&lt;1s</div><div class="metric-delta up">instant</div></div>
+            <div class="metric"><div class="metric-label">Bookings via WA</div><div class="metric-value">14</div><div class="metric-delta up">+3 today</div></div>
+          </div>
+          <div class="grid-2" style="padding:0 0 16px;">
+            <div class="card">
+              <div class="card-title">Connection</div>
+              <div class="settings-row"><div><div class="settings-label">WhatsApp number</div><div class="settings-sub">+34 600 000 000</div></div><button class="connect-btn connected">Connected</button></div>
+              <div class="settings-row"><div><div class="settings-label">Auto-reply</div><div class="settings-sub">AI replies to all incoming messages</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="settings-row"><div><div class="settings-label">Business hours only</div><div class="settings-sub">Only auto-reply during open hours</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+              <div class="settings-row"><div><div class="settings-label">Missed call text-back</div><div class="settings-sub">SMS when a call is missed</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Recent messages</div>
+              <div class="feed-item"><div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);">MG</div><div class="feed-body"><div class="feed-name">Maria García</div><div class="feed-msg">Booking confirmed for Friday 3pm</div></div><div class="feed-time">2m ago</div></div>
+              <div class="feed-item"><div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);">JL</div><div class="feed-body"><div class="feed-name">Jorge López</div><div class="feed-msg">Asked about prices — AI replied</div></div><div class="feed-time">18m ago</div></div>
+              <div class="feed-item"><div class="feed-avatar" style="background:var(--amber-bg);color:var(--amber-text);">CP</div><div class="feed-body"><div class="feed-name">Carlos P.</div><div class="feed-msg">Appointment rescheduled to Monday</div></div><div class="feed-time">1h ago</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Setup instructions</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+              <div>1. Sign up at <strong>wati.io</strong> and connect your WhatsApp Business number</div>
+              <div>2. In WATI → API & Webhooks → set webhook URL to your Vercel URL + <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;">/api/whatsapp-webhook</code></div>
+              <div>3. Add <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;">WATI_API_URL</code> and <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;">WATI_API_TOKEN</code> to your Vercel environment variables</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMAIL -->
+      <div id="section-email" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Email</div><div class="page-sub">Manage your email connection</div></div><span class="status-pill active">Connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Emails today</div><div class="metric-value">34</div><div class="metric-delta up">+8 vs yesterday</div></div>
+            <div class="metric"><div class="metric-label">Auto-drafted</div><div class="metric-value">34</div><div class="metric-delta up">100% rate</div></div>
+            <div class="metric"><div class="metric-label">Avg response</div><div class="metric-value">2m</div><div class="metric-delta up">very fast</div></div>
+            <div class="metric"><div class="metric-label">Open rate</div><div class="metric-value">94%</div><div class="metric-delta up">excellent</div></div>
+          </div>
+          <div class="grid-2" style="padding:0 0 16px;">
+            <div class="card">
+              <div class="card-title">Connection</div>
+              <div class="settings-row"><div><div class="settings-label">Connected inbox</div><div class="settings-sub">business@example.com</div></div><button class="connect-btn connected">Connected</button></div>
+              <div class="settings-row"><div><div class="settings-label">Auto-draft replies</div><div class="settings-sub">AI drafts replies in Gmail</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="settings-row"><div><div class="settings-label">Auto-send replies</div><div class="settings-sub">Send without manual review</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+              <div class="settings-row"><div><div class="settings-label">Review requests</div><div class="settings-sub">Send Google review link after appointments</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Recent emails</div>
+              <div class="feed-item"><div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);">JL</div><div class="feed-body"><div class="feed-name">Jorge López</div><div class="feed-msg">Availability enquiry — AI drafted reply</div></div><div class="feed-time">22m ago</div></div>
+              <div class="feed-item"><div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);">SR</div><div class="feed-body"><div class="feed-name">Sara R.</div><div class="feed-msg">Price list request — AI replied</div></div><div class="feed-time">1h ago</div></div>
+              <div class="feed-item"><div class="feed-avatar" style="background:var(--purple-bg);color:var(--purple-text);">MM</div><div class="feed-body"><div class="feed-name">Miguel M.</div><div class="feed-msg">Review request sent after appointment</div></div><div class="feed-time">3h ago</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Connect a new inbox</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:12px;">Connect any Gmail account. Non-Gmail accounts can forward to Gmail.</div>
+            <button class="btn primary" onclick="showToast('Redirecting to Gmail OAuth...')">Connect Gmail account</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- INSTAGRAM -->
+      <div id="section-instagram" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Instagram DMs</div><div class="page-sub">Manage your Instagram connection</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Connect Instagram</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">Connect your Instagram Business account to auto-reply to DMs using AI.</div>
+            <div class="settings-row"><div><div class="settings-label">Instagram Business account</div><div class="settings-sub">Requires a Business or Creator account</div></div><button class="connect-btn" onclick="connectChannel(this,'Instagram')">Connect</button></div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to DMs</div><div class="settings-sub">AI replies to all incoming direct messages</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to comments</div><div class="settings-sub">AI replies to post comments</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Setup instructions</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+              <div>1. Sign up at <strong>manychat.com</strong> (free tier available)</div>
+              <div>2. Connect your Instagram Business account</div>
+              <div>3. Create a flow → HTTP Request → POST to your webhook URL</div>
+              <div>4. The AI will handle all incoming DMs automatically</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHONE -->
+      <div id="section-phone" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Phone & SMS</div><div class="page-sub">Manage your phone connection</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Connect Phone</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">Add an AI phone agent that answers calls and sends SMS automatically.</div>
+            <div class="settings-row"><div><div class="settings-label">Phone number</div><div class="settings-sub">Via Twilio or Bland.ai</div></div><button class="connect-btn" onclick="connectChannel(this,'Phone')">Connect</button></div>
+            <div class="settings-row"><div><div class="settings-label">Missed call text-back</div><div class="settings-sub">Auto-SMS when a call is missed</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">AI voice agent</div><div class="settings-sub">AI answers calls automatically</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">SMS booking confirmations</div><div class="settings-sub">Send SMS when appointment is booked</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Setup instructions</div>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+              <div>1. Sign up at <strong>twilio.com</strong> or <strong>bland.ai</strong></div>
+              <div>2. Get a phone number</div>
+              <div>3. Set webhook URL to your Vercel URL + <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;">/api/whatsapp-webhook</code></div>
+              <div>4. Add your API credentials to Vercel environment variables</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT WIDGET -->
+      <div id="section-widget" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Chat Widget</div><div class="page-sub">Embed AI chat on your website</div></div><span class="status-pill active">Active</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Chats today</div><div class="metric-value">8</div><div class="metric-delta up">+2 vs yesterday</div></div>
+            <div class="metric"><div class="metric-label">Leads captured</div><div class="metric-value">5</div><div class="metric-delta up">+1 today</div></div>
+            <div class="metric"><div class="metric-label">Avg chat length</div><div class="metric-value">4m</div><div class="metric-delta neutral">stable</div></div>
+            <div class="metric"><div class="metric-label">Bookings via chat</div><div class="metric-value">3</div><div class="metric-delta up">+1 today</div></div>
+          </div>
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Widget settings</div>
+            <div class="settings-row"><div><div class="settings-label">Widget colour</div><div class="settings-sub">Matches your brand</div></div><input type="color" value="#1D9E75" style="border:none;background:none;cursor:pointer;width:32px;height:32px;border-radius:50%;"></div>
+            <div class="settings-row"><div><div class="settings-label">Welcome message</div><div class="settings-sub">First message visitors see</div></div></div>
+            <input class="field-input" style="margin-bottom:12px;" value="Hi! How can I help you today? 👋">
+            <div class="settings-row"><div><div class="settings-label">Collect visitor email</div><div class="settings-sub">Ask for email before chatting</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Show on mobile</div><div class="settings-sub">Display widget on mobile devices</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Embed code</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Paste this code before the &lt;/body&gt; tag on your website:</div>
+            <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);line-height:1.7;" id="widget-code">&lt;script src="https://orbyt-ai.vercel.app/widget.js"<br>&nbsp;&nbsp;data-client="your-business-slug"<br>&nbsp;&nbsp;data-color="#1D9E75"&gt;<br>&lt;/script&gt;</div>
+            <button class="btn" style="margin-top:10px;" onclick="navigator.clipboard.writeText(document.getElementById('widget-code').innerText).then(()=>showToast('Code copied!'))">Copy embed code</button>
+          </div>
+        </div>
       </div>
 
       <!-- ADMIN REVENUE -->
