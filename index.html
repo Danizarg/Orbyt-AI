@@ -481,9 +481,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
+(function() {
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
-const { createClient } = window.supabase;
-const supabase = createClient(
+const _sb = window.supabase.createClient;
+const orbytAuth = _sb(
   'https://stlfcpodwgwpqcpwodsr.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bGZjcG9kd2d3cHFjcHdvZHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0ODAzNjMsImV4cCI6MjA5MzA1NjM2M30.NvMAXqO7XodqSB5c4iZNRnZGIzhc7qKzD6RDoUpQ0Tg'
 );
@@ -498,10 +499,10 @@ let currentMsgChannel = '';
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await orbytAuth.auth.getSession();
   if (session?.user) loadUser(session.user);
   else showScreen('login');
-  supabase.auth.onAuthStateChange((event, session) => {
+  orbytAuth.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session?.user) loadUser(session.user);
     else if (event === 'SIGNED_OUT') showScreen('login');
   });
@@ -546,7 +547,7 @@ async function signUp() {
   if (password.length<8) { errEl.textContent='Password must be at least 8 characters.'; errEl.classList.add('visible'); return; }
   const btn = document.getElementById('signup-btn');
   btn.disabled=true; btn.textContent='Creating account...';
-  const { error } = await supabase.auth.signUp({ email, password, options:{ data:{ business_name: business } } });
+  const { error } = await orbytAuth.auth.signUp({ email, password, options:{ data:{ business_name: business } } });
   btn.disabled=false; btn.textContent='Create account';
   if (error) { errEl.textContent=error.message; errEl.classList.add('visible'); }
   else { succEl.textContent='Account created! Check your email to confirm, then sign in.'; succEl.classList.add('visible'); }
@@ -559,13 +560,13 @@ async function signIn() {
   const btn = document.getElementById('login-btn');
   errEl.classList.remove('visible');
   btn.disabled=true; btn.textContent='Signing in...';
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await orbytAuth.auth.signInWithPassword({ email, password });
   btn.disabled=false; btn.textContent='Sign in';
   if (error) { errEl.textContent=error.message; errEl.classList.add('visible'); }
 }
 
 async function signInWithGoogle() {
-  await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin } });
+  await orbytAuth.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin } });
 }
 
 async function resetPassword() {
@@ -574,16 +575,16 @@ async function resetPassword() {
   const succEl = document.getElementById('reset-success');
   errEl.classList.remove('visible'); succEl.classList.remove('visible');
   if (!email) { errEl.textContent='Enter your email.'; errEl.classList.add('visible'); return; }
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  const { error } = await orbytAuth.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
   if (error) { errEl.textContent=error.message; errEl.classList.add('visible'); }
   else { succEl.textContent='Reset link sent! Check your email.'; succEl.classList.add('visible'); }
 }
 
-async function signOut() { await supabase.auth.signOut(); }
+async function signOut() { await orbytAuth.auth.signOut(); }
 
 async function saveProfile() {
   const business = document.getElementById('account-business').value.trim();
-  const { error } = await supabase.auth.updateUser({ data:{ business_name: business } });
+  const { error } = await orbytAuth.auth.updateUser({ data:{ business_name: business } });
   if (error) showToast('Error: '+error.message);
   else { showToast('Profile saved!'); document.getElementById('user-name').textContent=business; document.getElementById('dash-biz-name').textContent=business+' — Dashboard'; }
 }
@@ -591,7 +592,7 @@ async function saveProfile() {
 async function changePassword() {
   const password = document.getElementById('new-password').value;
   if (password.length<8) { showToast('Password must be at least 8 characters'); return; }
-  const { error } = await supabase.auth.updateUser({ password });
+  const { error } = await orbytAuth.auth.updateUser({ password });
   if (error) showToast('Error: '+error.message);
   else showToast('Password updated!');
 }
@@ -687,6 +688,10 @@ function connectChannel(btn,name) { btn.textContent='Connecting...'; setTimeout(
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+// Expose functions to global scope for onclick handlers
+window.showScreen=showScreen; window.signIn=signIn; window.signUp=signUp; window.signOut=signOut; window.signInWithGoogle=signInWithGoogle; window.resetPassword=resetPassword; window.saveProfile=saveProfile; window.changePassword=changePassword; window.toggleUserMenu=toggleUserMenu; window.switchView=switchView; window.showSection=showSection; window.showAdminSection=showAdminSection; window.draftReply=draftReply; window.clearComposer=clearComposer; window.copyReply=copyReply; window.useTemplate=useTemplate; window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regenerateMsgReply=regenerateMsgReply; window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
+})();
 </script>
 </body>
 </html>
