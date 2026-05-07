@@ -5,6 +5,7 @@
     { "source": "/api/connect-gmail",    "destination": "/api/connect-gmail.js" },
     { "source": "/api/gmail-webhook",    "destination": "/api/gmail-webhook.js" },
     { "source": "/api/whatsapp-webhook", "destination": "/api/whatsapp-webhook.js" },
+    { "source": "/",                     "destination": "/landing.html" },
     { "source": "/dashboard",            "destination": "/dashboard.html" },
     { "source": "/app",                  "destination": "/dashboard.html" }
   ]
