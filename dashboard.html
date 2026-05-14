@@ -723,7 +723,7 @@ async function resetPassword() {
   else { succEl.textContent='Reset link sent! Check your email.'; succEl.classList.add('visible'); }
 }
 
-async function signOut() { await orbytAuth.auth.signOut(); }
+async function signOut() { await orbytAuth.auth.signOut(); window.location.href = '/'; }
 
 async function saveProfile() {
   const business = document.getElementById('account-business').value.trim();
