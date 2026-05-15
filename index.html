@@ -599,12 +599,9 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // Lead form
-document.getElementById('leadForm').addEventListener('submit', async (e) => {
+document.getElementById('leadForm').addEventListener('submit', (e) => {
   e.preventDefault();
-  const email = document.getElementById('leadEmail').value.trim();
-  if (!email) return;
   window.location.href = '/contact';
-  
 });
 
 // Stripe checkout
