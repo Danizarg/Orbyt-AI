@@ -183,6 +183,72 @@ a{color:inherit;text-decoration:none}
 .field-input:focus{border-color:var(--purple)}
 .field-input::placeholder{color:var(--text3)}
 select.field-input option{background:var(--bg2)}
+
+/* ── MOBILE ───────────────────────────────────────────────────────────────── */
+@media(max-width:768px){
+  /* Sidebar becomes drawer */
+  .sidebar{position:fixed;top:0;left:-220px;bottom:0;z-index:200;width:220px;transition:left 0.25s ease;box-shadow:4px 0 24px rgba(0,0,0,0.4)}
+  .sidebar.open{left:0}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199}
+  .sidebar-overlay.visible{display:block}
+
+  /* Topnav mobile */
+  .topnav{padding:0 14px;gap:10px}
+  .topnav-logo{font-size:14px}
+  .view-toggle{display:none}
+  .topnav-name{display:none}
+
+  /* Hamburger button */
+  .hamburger{display:flex;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;margin-right:4px;flex-shrink:0}
+  .hamburger span{display:block;width:20px;height:2px;background:var(--text2);border-radius:2px;transition:all 0.2s}
+
+  /* Main content full width */
+  .layout{display:block}
+  .main{height:calc(100vh - 52px);overflow-y:auto}
+
+  /* Metrics 2x2 */
+  .metrics{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px}
+  .metric{padding:12px}
+  .metric-value{font-size:20px}
+
+  /* Cards stack */
+  .grid-2{grid-template-columns:1fr;padding:0 14px 14px}
+
+  /* Page header */
+  .page-header{padding:14px 14px 0;flex-wrap:wrap;gap:8px}
+  .page-title{font-size:16px}
+
+  /* Composer padding */
+  #section-compose > div,
+  #section-inbox > div,
+  #section-bookings > div,
+  #section-ai-settings > div,
+  #section-connect > div,
+  #section-account > div,
+  #section-whatsapp > div,
+  #section-email > div,
+  #section-instagram > div,
+  #section-phone > div,
+  #section-widget > div,
+  #section-admin-clients > div,
+  #section-admin-revenue > div{padding-left:14px;padding-right:14px}
+
+  /* Steps grid */
+  .steps{grid-template-columns:1fr}
+
+  /* Client/admin metrics */
+  #section-admin-clients .metrics,
+  #section-admin-revenue .metrics{grid-template-columns:repeat(2,1fr)}
+
+  /* Toast */
+  .toast{left:14px;right:14px;bottom:14px}
+
+  /* Feature grid */
+  .feature-grid{grid-template-columns:1fr}
+}
+
+/* Hide hamburger on desktop */
+.hamburger{display:none}
 </style>
 </head>
 <body>
@@ -246,7 +312,11 @@ select.field-input option{background:var(--bg2)}
 
 <!-- MAIN APP -->
 <div id="app">
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="topnav">
+    <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
     <div class="topnav-logo">Orbyt <span>AI</span></div>
     <div class="view-toggle" id="admin-toggle" style="display:none;">
       <button class="vtbtn active" onclick="switchView('client')">Client view</button>
@@ -649,6 +719,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar) return;
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible');
+}
+
 function showScreen(name) {
   document.getElementById('screen-login').style.display  = name==='login'  ? 'flex' : 'none';
   document.getElementById('screen-signup').style.display = name==='signup' ? 'flex' : 'none';
@@ -758,6 +836,11 @@ function showSection(id) {
   const el = document.getElementById('section-'+id);
   if (el) el.classList.add('active');
   document.querySelectorAll('#sidebar-client .nav-item').forEach(el=>el.classList.remove('active'));
+  // Close sidebar on mobile
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) { sidebar.classList.remove('open'); }
+  if (overlay) { overlay.classList.remove('visible'); }
 }
 
 function showAdminSection(id) {
@@ -836,6 +919,7 @@ window.showSection=showSection; window.showAdminSection=showAdminSection; window
 window.clearComposer=clearComposer; window.copyReply=copyReply; window.useTemplate=useTemplate;
 window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regenerateMsgReply=regenerateMsgReply;
 window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
+window.toggleSidebar=toggleSidebar;
 })();
 </script>
 </body>
