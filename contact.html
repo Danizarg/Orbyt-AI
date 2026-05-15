@@ -166,7 +166,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 
   try {
     // Send via Formspree (free, no backend needed)
-    const res = await fetch('https://formspree.io/f/xwpbkqpd', {
+    const res = await fetch('https://formspree.io/f/mgodgzyn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ name, email, business, message })
