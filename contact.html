@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0a0b14" />
+<title>Contact — ORBYT</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#0d0e1a;color:#e6e8f0;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* Background */
+.bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.glow{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12}
+.glow-a{width:500px;height:500px;background:#6352ff;top:-100px;right:-100px}
+.glow-b{width:400px;height:400px;background:#22d3ee;bottom:-100px;left:-100px}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:48px 48px}
+
+/* Nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(13,14,26,.85);backdrop-filter:blur(16px);height:64px;display:flex;align-items:center;padding:0 clamp(1rem,5vw,2.5rem)}
+.nav::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#6352ff,#22d3ee,transparent)}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none}
+.brand-dot{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#6352ff,#22d3ee);flex-shrink:0}
+.brand-name{font-size:16px;font-weight:700;background:linear-gradient(135deg,#6352ff,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-spacer{flex:1}
+.nav-back{font-size:13px;color:rgba(230,232,240,.5);text-decoration:none;transition:color .15s}
+.nav-back:hover{color:#e6e8f0}
+
+/* Main */
+.main{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px clamp(1rem,5vw,2.5rem) 40px}
+.container{width:100%;max-width:560px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#22d3ee;margin-bottom:16px}
+.eyebrow-dot{width:6px;height:6px;border-radius:50%;background:#22d3ee;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px}
+.grad{background:linear-gradient(135deg,#6352ff,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:1rem;color:rgba(230,232,240,.5);line-height:1.7;margin-bottom:40px}
+
+/* Contact cards */
+.cards{display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.card{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:all .2s;cursor:pointer}
+.card:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);transform:translateX(4px)}
+.card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
+.card-icon.wa{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.2)}
+.card-icon.tg{background:rgba(0,136,204,.12);border:1px solid rgba(0,136,204,.2)}
+.card-icon.em{background:rgba(99,82,255,.12);border:1px solid rgba(99,82,255,.2)}
+.card-body{flex:1}
+.card-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:rgba(230,232,240,.35);margin-bottom:3px}
+.card-value{font-size:14px;font-weight:500;color:#e6e8f0}
+.card-arrow{font-size:18px;color:rgba(230,232,240,.25);transition:color .2s}
+.card:hover .card-arrow{color:rgba(230,232,240,.6)}
+
+/* Form */
+.form-title{font-size:14px;font-weight:600;color:rgba(230,232,240,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+.form{display:flex;flex-direction:column;gap:12px}
+.field label{display:block;font-size:12px;font-weight:500;color:rgba(230,232,240,.45);margin-bottom:5px}
+.field input,.field textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;color:#e6e8f0;font-size:14px;font-family:inherit;outline:none;transition:border .15s;resize:none}
+.field input:focus,.field textarea:focus{border-color:#6352ff}
+.field input::placeholder,.field textarea::placeholder{color:rgba(230,232,240,.25)}
+.field textarea{min-height:100px}
+.submit{width:100%;padding:12px;background:linear-gradient(135deg,#6352ff,#22d3ee);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s,transform .15s;margin-top:4px}
+.submit:hover{opacity:.9;transform:translateY(-1px)}
+.submit:disabled{opacity:.5;cursor:default;transform:none}
+.success-msg{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:14px;color:#34d399;font-size:13px;text-align:center;display:none;margin-top:8px}
+.success-msg.show{display:block}
+
+/* Footer */
+.footer{text-align:center;padding:24px;font-size:12px;color:rgba(230,232,240,.25)}
+.footer a{color:#a89cff;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="grid"></div>
+</div>
+
+<nav class="nav">
+  <a class="brand" href="/">
+    <div class="brand-dot"></div>
+    <span class="brand-name">ORBYT</span>
+  </a>
+  <div class="nav-spacer"></div>
+  <a class="nav-back" href="/">← Back to home</a>
+</nav>
+
+<main class="main">
+  <div class="container">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Get in touch</div>
+    <h1>Let's talk about<br><span class="grad">your business.</span></h1>
+    <p class="sub">Interested in early access? Have a question? Reach out directly — we respond fast.</p>
+
+    <div class="cards">
+      <a class="card" href="https://wa.me/34604427964" target="_blank" rel="noopener">
+        <div class="card-icon wa">💬</div>
+        <div class="card-body">
+          <div class="card-label">WhatsApp</div>
+          <div class="card-value">+34 604 427 964</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="https://t.me/Danielzarghoum" target="_blank" rel="noopener">
+        <div class="card-icon tg">✈️</div>
+        <div class="card-body">
+          <div class="card-label">Telegram</div>
+          <div class="card-value">@Danielzarghoum</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="mailto:daniel.zarghoum@gmail.com">
+        <div class="card-icon em">✉️</div>
+        <div class="card-body">
+          <div class="card-label">Email</div>
+          <div class="card-value">daniel.zarghoum@gmail.com</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+    </div>
+
+    <div class="form-title">Or send a message</div>
+    <form class="form" id="contactForm" novalidate>
+      <div class="field">
+        <label for="name">Your name</label>
+        <input id="name" type="text" placeholder="Maria García" required>
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input id="email" type="email" placeholder="maria@yourbusiness.com" required>
+      </div>
+      <div class="field">
+        <label for="business">Your business (optional)</label>
+        <input id="business" type="text" placeholder="Salon Rosa, Marbella">
+      </div>
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" placeholder="Tell me about your business and what you need..." required></textarea>
+      </div>
+      <button type="submit" class="submit" id="submitBtn">Send message</button>
+      <div class="success-msg" id="successMsg">
+        ✓ Message sent! I'll get back to you within a few hours.
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer class="footer">
+  © <span id="year"></span> ORBYT AI · <a href="/">Home</a> · <a href="/dashboard">Sign in</a>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const business = document.getElementById('business').value.trim();
+  const message = document.getElementById('message').value.trim();
+  if (!name || !email || !message) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    // Send via Formspree (free, no backend needed)
+    const res = await fetch('https://formspree.io/f/xwpbkqpd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ name, email, business, message })
+    });
+
+    if (res.ok) {
+      document.getElementById('successMsg').classList.add('show');
+      document.getElementById('contactForm').reset();
+      btn.textContent = 'Sent!';
+    } else {
+      btn.textContent = 'Send message';
+      btn.disabled = false;
+      alert('Something went wrong. Please try WhatsApp or email directly.');
+    }
+  } catch(e) {
+    btn.textContent = 'Send message';
+    btn.disabled = false;
+    alert('Something went wrong. Please try WhatsApp or email directly.');
+  }
+});
+</script>
+</body>
+</html>

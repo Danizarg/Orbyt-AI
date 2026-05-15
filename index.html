@@ -603,9 +603,8 @@ document.getElementById('leadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('leadEmail').value.trim();
   if (!email) return;
-  document.getElementById('leadHint').textContent = '🎉 You\'re on the list! We\'ll be in touch shortly.';
-  document.getElementById('leadEmail').value = '';
-  showToast('You\'re on the early access list!');
+  window.location.href = '/contact';
+  
 });
 
 // Stripe checkout

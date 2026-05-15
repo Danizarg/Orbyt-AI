@@ -8,6 +8,7 @@
     { "source": "/api/gmail-webhook",    "destination": "/api/gmail-webhook.js" },
     { "source": "/api/whatsapp-webhook", "destination": "/api/whatsapp-webhook.js" },
     { "source": "/dashboard",            "destination": "/dashboard.html" },
-    { "source": "/app",                  "destination": "/dashboard.html" }
+    { "source": "/app",                  "destination": "/dashboard.html" },
+    { "source": "/contact",              "destination": "/contact.html" }
   ]
 }
