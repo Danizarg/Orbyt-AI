@@ -61,7 +61,7 @@ button{cursor:pointer;font-family:inherit}
   .nav__cta{display:none}
   .nav__toggle{display:flex}
 }
-.mobile-menu{position:fixed;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;z-index:99}
+.mobile-menu{position:fixed;top:64px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:1.5rem;flex-direction:column;gap:1.25rem;z-index:99;display:none}
 .mobile-menu a{font-size:1rem;color:var(--text-muted)}
 .mobile-menu__cta{display:flex;flex-direction:column;gap:.75rem;margin-top:.5rem}
 
@@ -254,7 +254,7 @@ details p{padding:0 1.25rem 1.1rem;font-size:.875rem;color:var(--text-muted);lin
       <span></span><span></span><span></span>
     </button>
   </div>
-  <div class="mobile-menu" id="mobileMenu" hidden>
+  <div class="mobile-menu" id="mobileMenu">
     <a href="#features">Features</a>
     <a href="#how">How it works</a>
     <a href="#pricing">Pricing</a>
@@ -582,9 +582,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
 const toggle = document.getElementById('navToggle');
 const menu = document.getElementById('mobileMenu');
 toggle.addEventListener('click', () => {
-  const open = !menu.hidden;
-  menu.hidden = open;
-  toggle.setAttribute('aria-expanded', !open);
+  const isOpen = menu.style.display === 'flex';
+  menu.style.display = isOpen ? 'none' : 'flex';
+  toggle.setAttribute('aria-expanded', !isOpen);
 });
 
 // Reveal on scroll
