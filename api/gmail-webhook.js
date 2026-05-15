@@ -10,7 +10,7 @@
 // 2. Create subscription → Push → URL: https://yourapp.vercel.app/api/gmail-webhook
 // 3. In Gmail API → Watch → subscribe your client's inbox to the topic
 
-const { google } = require('googleapis');
+import { google } from 'googleapis';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GMAIL_CLIENT_ID,
@@ -18,7 +18,7 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GMAIL_REDIRECT_URI
 );
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {

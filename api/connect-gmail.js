@@ -10,7 +10,7 @@
 //    Redirect URI: https://YOUR-VERCEL-URL.vercel.app/api/connect-gmail
 // 5. Copy Client ID and Client Secret → add to Vercel env vars
 
-const { google } = require('googleapis');
+import { google } from 'googleapis';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GMAIL_CLIENT_ID,
@@ -18,7 +18,7 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.GMAIL_REDIRECT_URI // e.g. https://yourapp.vercel.app/api/connect-gmail
 );
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   const { code, state, action } = req.query;
 
   // Step 1: Redirect user to Google consent screen
