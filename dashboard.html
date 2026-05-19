@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ORBYT — Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root {
@@ -249,6 +250,17 @@ select.field-input option{background:var(--bg2)}
 
 /* Hide hamburger on desktop */
 .hamburger{display:none}
+
+/* ── MOBILE AUTH ──────────────────────────────────────────────────────────── */
+@media(max-width:768px){
+  .auth-wrap{padding:16px;align-items:flex-start;padding-top:40px}
+  .auth-card{padding:28px 20px;border-radius:12px;max-width:100%}
+  .auth-title{font-size:16px}
+  .auth-sub{font-size:12px;margin-bottom:20px}
+  .auth-btn{padding:10px;font-size:13px}
+  .auth-input{font-size:16px;padding:10px 12px} /* 16px prevents iOS zoom */
+  .auth-logo{font-size:18px}
+}
 </style>
 </head>
 <body>
@@ -705,7 +717,7 @@ const orbytAuth = _sb(
   'https://stlfcpodwgwpqcpwodsr.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bGZjcG9kd2d3cHFjcHdvZHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0ODAzNjMsImV4cCI6MjA5MzA1NjM2M30.NvMAXqO7XodqSB5c4iZNRnZGIzhc7qKzD6RDoUpQ0Tg'
 );
-const ADMIN_EMAILS = ['danielzarghoum@gmail.com'];
+const ADMIN_EMAILS = ['danizarg@gmail.com'];
 let currentUser = null, currentMsgText = '', currentMsgChannel = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
