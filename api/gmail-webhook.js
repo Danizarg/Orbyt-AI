@@ -1,102 +1,138 @@
 // api/gmail-webhook.js
-// Called by Gmail push notifications when a new email arrives.
-// Reads the email, generates an AI reply via Groq, optionally auto-sends it.
+// Receives Gmail Pub/Sub push notifications when new emails arrive.
+// Looks up stored OAuth tokens, fetches the email, drafts an AI reply in Gmail.
 //
-// HOW IT WORKS:
-// Gmail → Pub/Sub notification → this endpoint → Groq AI → draft reply in Gmail
-//
-// SETUP:
-// 1. In Google Cloud → Pub/Sub → Create topic: "orbyt-ai-gmail"
-// 2. Create subscription → Push → URL: https://yourapp.vercel.app/api/gmail-webhook
-// 3. In Gmail API → Watch → subscribe your client's inbox to the topic
+// Setup: Google Cloud → Pub/Sub → create topic → push subscription → URL: https://orbytai.org/api/gmail-webhook
+// Then set GMAIL_PUBSUB_TOPIC env var and the connect-gmail flow will auto-subscribe each client.
 
-import { google } from 'googleapis';
-
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GMAIL_CLIENT_ID,
-  process.env.GMAIL_CLIENT_SECRET,
-  process.env.GMAIL_REDIRECT_URI
-);
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
-    // Decode Pub/Sub message
     const message = req.body?.message;
     if (!message?.data) return res.status(200).end(); // acknowledge silently
 
     const decoded = JSON.parse(Buffer.from(message.data, 'base64').toString());
     const { emailAddress, historyId } = decoded;
 
-    // TODO: look up this email address in your DB to get their stored OAuth tokens
-    // const tokens = await getTokensFromAirtable(emailAddress);
-    // oauth2Client.setCredentials(tokens);
+    // Look up stored tokens for this Gmail address
+    const tokenRecord = await getGmailTokens(emailAddress);
+    if (!tokenRecord) {
+      console.log(`No tokens found for ${emailAddress}`);
+      return res.status(200).end();
+    }
 
-    // For now, use env var tokens (single client setup)
-    oauth2Client.setCredentials({
-      access_token: process.env.GMAIL_ACCESS_TOKEN,
-      refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-    });
+    const accessToken = await getValidAccessToken(tokenRecord);
 
-    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+    // Fetch new messages from Gmail history
+    const histRes = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/history?startHistoryId=${historyId}&historyTypes=messageAdded`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const histData = await histRes.json();
+    const added = histData.history?.flatMap(h => h.messagesAdded || []) || [];
+    if (!added.length) return res.status(200).end();
 
-    // Get the latest message
-    const history = await gmail.users.history.list({
-      userId: 'me',
-      startHistoryId: historyId,
-      historyTypes: ['messageAdded'],
-    });
+    for (const { message: msg } of added) {
+      const msgRes = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const full = await msgRes.json();
 
-    const messages = history.data?.history?.[0]?.messagesAdded || [];
-    if (!messages.length) return res.status(200).end();
-
-    for (const { message: msg } of messages) {
-      const full = await gmail.users.messages.get({
-        userId: 'me',
-        id: msg.id,
-        format: 'full',
-      });
-
-      const headers = full.data.payload?.headers || [];
-      const subject = headers.find(h => h.name === 'Subject')?.value || '(no subject)';
-      const from    = headers.find(h => h.name === 'From')?.value || '';
-      const body    = extractBody(full.data.payload);
+      const hdrs    = full.payload?.headers || [];
+      const subject = hdrs.find(h => h.name === 'Subject')?.value || '(no subject)';
+      const from    = hdrs.find(h => h.name === 'From')?.value || '';
+      const body    = extractBody(full.payload);
 
       if (!body || from.includes('noreply') || from.includes('no-reply')) continue;
 
-      // Generate AI reply
-      const aiReply = await generateReply(body, subject);
+      const aiReply = await generateReply(body, subject, tokenRecord.BusinessContext);
 
-      // Create draft in Gmail (does NOT auto-send — client reviews first)
-      const draftBody = buildEmail(from, subject, aiReply);
-      await gmail.users.drafts.create({
-        userId: 'me',
-        requestBody: {
+      // Save as Gmail draft (client reviews before sending)
+      await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/drafts`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           message: {
-            raw: Buffer.from(draftBody).toString('base64url'),
+            raw: Buffer.from(buildEmail(from, subject, aiReply)).toString('base64url'),
             threadId: msg.threadId,
           },
-        },
+        }),
       });
 
-      console.log(`Draft created for email from ${from}`);
+      console.log(`Draft created for email from ${from} (inbox: ${emailAddress})`);
     }
 
     return res.status(200).end();
   } catch (err) {
-    console.error('Webhook error:', err);
-    return res.status(200).end(); // always 200 to acknowledge Pub/Sub
+    console.error('Gmail webhook error:', err.message);
+    return res.status(200).end(); // always 200 so Pub/Sub doesn't retry indefinitely
   }
+};
+
+async function getGmailTokens(gmailAddress) {
+  const res = await fetch(
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={GmailAddress}="${gmailAddress}"`,
+    { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
+  );
+  const data = await res.json();
+  return data.records?.[0]?.fields || null;
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+async function getValidAccessToken(record) {
+  const expiresAt = new Date(record.ExpiresAt).getTime();
+  if (Date.now() < expiresAt - 5 * 60 * 1000) return record.AccessToken;
+
+  // Token expired — refresh it
+  const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.GMAIL_CLIENT_ID,
+      client_secret: process.env.GMAIL_CLIENT_SECRET,
+      refresh_token: record.RefreshToken,
+      grant_type: 'refresh_token',
+    }),
+  });
+  const newTokens = await refreshRes.json();
+  if (newTokens.error) throw new Error('Token refresh failed: ' + newTokens.error);
+
+  // Update access token in Airtable
+  const searchRes = await fetch(
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={GmailAddress}="${record.GmailAddress}"`,
+    { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
+  );
+  const searchData = await searchRes.json();
+  const existing = searchData.records?.[0];
+  if (existing) {
+    await fetch(
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens/${existing.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          fields: {
+            AccessToken: newTokens.access_token,
+            ExpiresAt: new Date(Date.now() + (newTokens.expires_in || 3600) * 1000).toISOString(),
+          },
+        }),
+      }
+    );
+  }
+
+  return newTokens.access_token;
+}
 
 function extractBody(payload) {
   if (!payload) return '';
-  if (payload.body?.data) {
-    return Buffer.from(payload.body.data, 'base64').toString('utf-8');
-  }
+  if (payload.body?.data) return Buffer.from(payload.body.data, 'base64').toString('utf-8');
   for (const part of payload.parts || []) {
     const text = extractBody(part);
     if (text) return text;
@@ -104,9 +140,9 @@ function extractBody(payload) {
   return '';
 }
 
-async function generateReply(emailBody, subject) {
-  const prompt = `You are a helpful AI assistant for a small local business. 
-A customer sent this email with subject "${subject}":
+async function generateReply(emailBody, subject, businessContext) {
+  const ctx = businessContext ? `Business context: ${businessContext}. ` : '';
+  const prompt = `You are a helpful AI assistant for a small local business. ${ctx}A customer sent this email with subject "${subject}":
 
 "${emailBody.slice(0, 800)}"
 
@@ -117,7 +153,7 @@ Write only the reply body text, no subject line.`;
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
@@ -131,11 +167,5 @@ Write only the reply body text, no subject line.`;
 
 function buildEmail(to, subject, body) {
   const replySubject = subject.startsWith('Re:') ? subject : `Re: ${subject}`;
-  return [
-    `To: ${to}`,
-    `Subject: ${replySubject}`,
-    'Content-Type: text/plain; charset=utf-8',
-    '',
-    body,
-  ].join('\r\n');
+  return [`To: ${to}`, `Subject: ${replySubject}`, 'Content-Type: text/plain; charset=utf-8', '', body].join('\r\n');
 }
