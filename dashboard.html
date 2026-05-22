@@ -504,7 +504,7 @@ select.field-input option{background:var(--bg2)}
             <div class="card-title">Channel connections</div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--green-bg);color:var(--green-text);width:32px;height:32px;">WA</div><div><div class="settings-label">WhatsApp Business</div><div class="settings-sub">Via WATI API</div></div></div><button class="connect-btn" onclick="connectChannel(this,'WhatsApp')">Connect</button></div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--blue-bg);color:var(--blue-text);width:32px;height:32px;">EM</div><div><div class="settings-label">Email (Gmail / any)</div><div class="settings-sub">Connect via Gmail OAuth</div></div></div><button id="gmail-connect-btn" class="connect-btn" onclick="connectGmail()">Connect</button></div>
-            <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--pink-bg);color:var(--pink-text);width:32px;height:32px;">IG</div><div><div class="settings-label">Instagram DMs</div><div class="settings-sub">Via Meta Business API</div></div></div><button class="connect-btn" onclick="connectChannel(this,'Instagram')">Connect</button></div>
+            <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--pink-bg);color:var(--pink-text);width:32px;height:32px;">IG</div><div><div class="settings-label">Instagram DMs</div><div class="settings-sub">Via Meta Business API</div></div></div><button id="instagram-connect-btn-2" class="connect-btn" onclick="connectInstagram()">Connect</button></div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--coral-bg);color:var(--coral-text);width:32px;height:32px;">PH</div><div><div class="settings-label">Phone / SMS</div><div class="settings-sub">Via Twilio</div></div></div><button class="connect-btn" onclick="connectChannel(this,'Phone')">Connect</button></div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--amber-bg);color:var(--amber-text);width:32px;height:32px;">CA</div><div><div class="settings-label">Calendly / Booking</div><div class="settings-sub">Sync appointments</div></div></div><button class="connect-btn" onclick="connectChannel(this,'Calendly')">Connect</button></div>
           </div>
@@ -621,12 +621,12 @@ select.field-input option{background:var(--bg2)}
 
       <!-- INSTAGRAM -->
       <div id="section-instagram" class="view">
-        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Instagram DMs</div><div class="page-sub">Manage your Instagram connection</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Instagram DMs</div><div class="page-sub">Manage your Instagram connection</div></div><span id="instagram-status-pill" class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
         <div style="padding:0 24px 24px;">
           <div class="card" style="margin-bottom:12px;">
             <div class="card-title">Connect Instagram</div>
             <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">Connect your Instagram Business account to auto-reply to DMs using AI.</div>
-            <div class="settings-row"><div><div class="settings-label">Instagram Business account</div><div class="settings-sub">Requires a Business or Creator account</div></div><button class="connect-btn" onclick="connectChannel(this,'Instagram')">Connect</button></div>
+            <div class="settings-row"><div><div class="settings-label">Instagram Business account</div><div id="instagram-account-label" class="settings-sub">Requires a Business or Creator account</div></div><button id="instagram-connect-btn" class="connect-btn" onclick="connectInstagram()">Connect</button></div>
             <div class="settings-row"><div><div class="settings-label">Auto-reply to DMs</div><div class="settings-sub">AI replies to all incoming direct messages</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
             <div class="settings-row"><div><div class="settings-label">Auto-reply to comments</div><div class="settings-sub">AI replies to post comments</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
           </div>
@@ -763,7 +763,7 @@ function loadUser(user) {
   if (ADMIN_EMAILS.includes(email)) document.getElementById('admin-toggle').style.display = 'flex';
   showApp();
   showSection('dashboard');
-  checkGmailConnection();
+  checkOAuthCallbacks();
 }
 
 async function signUp() {
@@ -927,6 +927,20 @@ function connectGmail() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
   window.location.href = '/api/connect-gmail?action=auth&state=' + encodeURIComponent(currentUser.email);
 }
+function connectInstagram() {
+  if (!currentUser?.email) { showToast('Please sign in first'); return; }
+  window.location.href = '/api/connect-instagram?action=auth&state=' + encodeURIComponent(currentUser.email);
+}
+function setInstagramConnected(account) {
+  const label = document.getElementById('instagram-account-label');
+  if (label) label.textContent = account ? '@' + account : 'Connected';
+  ['instagram-connect-btn','instagram-connect-btn-2'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = null; }
+  });
+  const pill = document.getElementById('instagram-status-pill');
+  if (pill) { pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected'; }
+}
 function setGmailConnected(inbox) {
   const label = document.getElementById('gmail-inbox-label');
   if (label) label.textContent = inbox || 'Connected';
@@ -937,16 +951,28 @@ function setGmailConnected(inbox) {
   const pill = document.getElementById('email-status-pill');
   if (pill) { pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected'; }
 }
-function checkGmailConnection() {
+function checkOAuthCallbacks() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('connected') === 'gmail') {
+  const connected = params.get('connected');
+  const error = params.get('error');
+  if (connected === 'gmail') {
     const inbox = decodeURIComponent(params.get('inbox') || '');
     setGmailConnected(inbox);
     showToast('Gmail connected' + (inbox ? ': ' + inbox : '!'));
     window.history.replaceState({}, '', '/dashboard');
     showSection('email');
-  } else if (params.get('error') === 'gmail_auth_failed') {
+  } else if (connected === 'instagram') {
+    const account = decodeURIComponent(params.get('account') || '');
+    setInstagramConnected(account);
+    showToast('Instagram connected' + (account ? ': @' + account : '!'));
+    window.history.replaceState({}, '', '/dashboard');
+    showSection('instagram');
+  } else if (error === 'gmail_auth_failed') {
     showToast('Gmail connection failed. Please try again.');
+    window.history.replaceState({}, '', '/dashboard');
+  } else if (error === 'instagram_auth_failed') {
+    const msg = decodeURIComponent(params.get('msg') || '');
+    showToast('Instagram connection failed' + (msg ? ': ' + msg : '.'));
     window.history.replaceState({}, '', '/dashboard');
   }
 }
@@ -959,7 +985,7 @@ window.showSection=showSection; window.showAdminSection=showAdminSection; window
 window.clearComposer=clearComposer; window.copyReply=copyReply; window.useTemplate=useTemplate;
 window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regenerateMsgReply=regenerateMsgReply;
 window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
-window.connectGmail=connectGmail;
+window.connectGmail=connectGmail; window.connectInstagram=connectInstagram;
 window.toggleSidebar=toggleSidebar;
 })();
 </script>
