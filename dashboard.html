@@ -900,7 +900,7 @@ function useTemplate(t) { document.getElementById('compose-input').value=templat
 
 async function openMessage(el,name,text,channel) {
   currentMsgText=text; currentMsgChannel=channel;
-  document.getElementById('msg-detail').style.display='';
+  document.getElementById('msg-detail').style.display='block';
   document.getElementById('msg-detail-header').textContent=name+' - '+channel;
   document.getElementById('msg-detail-body').textContent=text;
   document.getElementById('msg-ai-reply').textContent='';
@@ -912,7 +912,7 @@ async function openMessage(el,name,text,channel) {
 }
 async function openEmailMessage(name, subject, messageId) {
   if (!currentUser?.email) return;
-  document.getElementById('msg-detail').style.display='';
+  document.getElementById('msg-detail').style.display='block';
   document.getElementById('msg-detail-header').textContent = name + ' — Email';
   document.getElementById('msg-detail-body').textContent = 'Loading...';
   document.getElementById('msg-ai-reply').textContent = '';
@@ -969,7 +969,7 @@ async function loadRealEmails(userEmail) {
     const emailBadge = '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span>';
     // Inbox feed (all emails)
     if (inboxFeed) {
-      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item" onclick="openEmailMessage(${JSON.stringify(e.name)},${JSON.stringify(e.subject)},${JSON.stringify(e.id)})">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item" data-msgid="${e.id}" data-name="${e.name.replace(/"/g,'&quot;')}" data-subject="${e.subject.replace(/"/g,'&quot;')}" onclick="openEmailMessage(this.dataset.name,this.dataset.subject,this.dataset.msgid)">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
       // Update unread badge
       const unread = emails.filter(e=>e.isUnread).length;
       const badge = document.querySelector('.nav-badge');
