@@ -450,9 +450,7 @@ select.field-input option{background:var(--bg2)}
         <div style="padding:0 24px 24px;">
           <div class="card">
             <div class="card-title">All messages</div>
-            <div class="feed-item" onclick="openMessage(this,'Maria García','Hola, quería saber si tenéis disponibilidad el viernes por la tarde para un corte y color.','WhatsApp')"><div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);font-weight:700;">MG</div><div class="feed-body"><div class="feed-name">Maria García <span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">WhatsApp</span> <span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;">New</span></div><div class="feed-msg">Hola, quería saber si tenéis disponibilidad el viernes...</div></div><div class="feed-time">3m ago</div></div>
-            <div class="feed-item" onclick="openMessage(this,'Jorge López','Good morning, I saw your Instagram post. Do you have slots available this week?','Email')"><div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);font-weight:700;">JL</div><div class="feed-body"><div class="feed-name">Jorge López <span style="font-size:10px;background:var(--green-bg);color:var(--green-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span> <span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;">New</span></div><div class="feed-msg">Good morning, I saw your Instagram post...</div></div><div class="feed-time">22m ago</div></div>
-            <div class="feed-item" onclick="openMessage(this,'Ana Navarro','Cuánto cuesta un tinte completo? También hacéis mechas?','Instagram')"><div class="feed-avatar" style="background:var(--pink-bg);color:var(--pink-text);font-weight:700;">AN</div><div class="feed-body"><div class="feed-name">Ana Navarro <span style="font-size:10px;background:var(--pink-bg);color:var(--pink-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Instagram</span> <span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;">New</span></div><div class="feed-msg">Cuánto cuesta un tinte completo?...</div></div><div class="feed-time">45m ago</div></div>
+            <div id="inbox-feed" style="color:var(--text-secondary);font-size:13px;padding:12px 0;">Connect Gmail to see real messages here.</div>
           </div>
           <div class="card" id="msg-detail" style="margin-top:12px;display:none;">
             <div class="card-title" id="msg-detail-header">Message</div>
@@ -606,9 +604,7 @@ select.field-input option{background:var(--bg2)}
             </div>
             <div class="card">
               <div class="card-title">Recent emails</div>
-              <div class="feed-item"><div class="feed-avatar" style="background:var(--blue-bg);color:var(--blue-text);">JL</div><div class="feed-body"><div class="feed-name">Jorge López</div><div class="feed-msg">Availability enquiry — AI drafted reply</div></div><div class="feed-time">22m ago</div></div>
-              <div class="feed-item"><div class="feed-avatar" style="background:var(--green-bg);color:var(--green-text);">SR</div><div class="feed-body"><div class="feed-name">Sara R.</div><div class="feed-msg">Price list request — AI replied</div></div><div class="feed-time">1h ago</div></div>
-              <div class="feed-item"><div class="feed-avatar" style="background:var(--purple-bg);color:var(--purple-text);">MM</div><div class="feed-body"><div class="feed-name">Miguel M.</div><div class="feed-msg">Review request sent after appointment</div></div><div class="feed-time">3h ago</div></div>
+              <div id="email-recent-feed" style="color:var(--text-secondary);font-size:13px;padding:8px 0;">Loading...</div>
             </div>
           </div>
           <div class="card">
@@ -928,9 +924,44 @@ async function loadChannelStatus(email) {
   try {
     const res = await fetch('/api/channel-status?email=' + encodeURIComponent(email));
     const data = await res.json();
-    if (data.gmail?.connected) setGmailConnected(data.gmail.inbox);
+    if (data.gmail?.connected) { setGmailConnected(data.gmail.inbox); loadRealEmails(email); }
     if (data.instagram?.connected) setInstagramConnected(data.instagram.account);
   } catch(e) {}
+}
+
+async function loadRealEmails(userEmail) {
+  const inboxFeed = document.getElementById('inbox-feed');
+  const emailFeed = document.getElementById('email-recent-feed');
+  if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">Loading emails...</div>';
+  try {
+    const res = await fetch('/api/fetch-emails?email=' + encodeURIComponent(userEmail));
+    const data = await res.json();
+    const emails = data.emails || [];
+    if (!emails.length) {
+      if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">No emails in inbox yet.</div>';
+      if (emailFeed) emailFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">No emails yet.</div>';
+      return;
+    }
+    const colors = [['var(--blue-bg)','var(--blue-text)'],['var(--green-bg)','var(--green-text)'],['var(--purple-bg)','var(--purple-text)'],['var(--pink-bg)','var(--pink-text)'],['var(--amber-bg)','var(--amber-text)']];
+    const makeAvatar = (name, i) => { const [bg,fg] = colors[i % colors.length]; return `<div class="feed-avatar" style="background:${bg};color:${fg};">${(name||'?').slice(0,2).toUpperCase()}</div>`; };
+    const makeTime = (dateStr) => { if (!dateStr) return ''; const d = new Date(dateStr); const diff = Date.now()-d.getTime(); if(diff<3600000) return Math.round(diff/60000)+'m ago'; if(diff<86400000) return Math.round(diff/3600000)+'h ago'; return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); };
+    const newBadge = '<span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;">New</span>';
+    const emailBadge = '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span>';
+    // Inbox feed (all emails)
+    if (inboxFeed) {
+      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item" onclick="openMessage(this,${JSON.stringify(e.name)},${JSON.stringify(e.snippet)},'Email')">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      // Update unread badge
+      const unread = emails.filter(e=>e.isUnread).length;
+      const badge = document.querySelector('.nav-badge');
+      if (badge) badge.textContent = unread || '';
+    }
+    // Email section recent feed (last 3)
+    if (emailFeed) {
+      emailFeed.innerHTML = emails.slice(0,3).map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+    }
+  } catch(err) {
+    if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">Could not load emails.</div>';
+  }
 }
 function connectGmail() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }

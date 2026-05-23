@@ -8,6 +8,7 @@
     { "source": "/api/checkout",         "destination": "/api/checkout.js" },
     { "source": "/api/webhook",          "destination": "/api/webhook.js" },
     { "source": "/api/channel-status",      "destination": "/api/channel-status.js" },
+    { "source": "/api/fetch-emails",        "destination": "/api/fetch-emails.js" },
     { "source": "/api/connect-gmail",       "destination": "/api/connect-gmail.js" },
     { "source": "/api/gmail-webhook",       "destination": "/api/gmail-webhook.js" },
     { "source": "/api/connect-instagram",   "destination": "/api/connect-instagram.js" },
