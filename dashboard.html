@@ -764,6 +764,7 @@ function loadUser(user) {
   showApp();
   showSection('dashboard');
   checkOAuthCallbacks();
+  loadChannelStatus(email);
 }
 
 async function signUp() {
@@ -923,6 +924,14 @@ async function regenerateMsgReply() {
 }
 function sendReply() { showToast('Reply sent via '+currentMsgChannel+'!'); document.getElementById('msg-detail').style.display='none'; }
 function connectChannel(btn,name) { btn.textContent='Connecting...'; setTimeout(()=>{ btn.className='connect-btn connected'; btn.textContent='Connected'; showToast(name+' connected!'); },1200); }
+async function loadChannelStatus(email) {
+  try {
+    const res = await fetch('/api/channel-status?email=' + encodeURIComponent(email));
+    const data = await res.json();
+    if (data.gmail?.connected) setGmailConnected(data.gmail.inbox);
+    if (data.instagram?.connected) setInstagramConnected(data.instagram.account);
+  } catch(e) {}
+}
 function connectGmail() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
   window.location.href = '/api/connect-gmail?action=auth&state=' + encodeURIComponent(currentUser.email);
