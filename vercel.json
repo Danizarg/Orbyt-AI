@@ -1,4 +1,7 @@
 {
+  "redirects": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.orbytai.org" }], "destination": "https://orbytai.org/$1", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/api/draft",            "destination": "/api/draft.js" },
     { "source": "/api/stats",            "destination": "/api/stats.js" },

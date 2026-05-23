@@ -63,10 +63,12 @@ module.exports = async function handler(req, res) {
         await setupGmailWatch(tokens.access_token);
       }
 
-      return res.redirect(`/dashboard?connected=gmail&inbox=${encodeURIComponent(gmailAddress)}`);
+      const base = process.env.APP_URL || 'https://orbytai.org';
+      return res.redirect(`${base}/dashboard?connected=gmail&inbox=${encodeURIComponent(gmailAddress)}`);
     } catch (err) {
       console.error('Gmail OAuth error:', err.message);
-      return res.redirect('/dashboard?error=gmail_auth_failed');
+      const base = process.env.APP_URL || 'https://orbytai.org';
+      return res.redirect(`${base}/dashboard?error=gmail_auth_failed`);
     }
   }
 
