@@ -910,6 +910,26 @@ async function openMessage(el,name,text,channel) {
   catch(e) { document.getElementById('msg-ai-reply').textContent='Could not load AI reply.'; }
   finally { spinner.classList.remove('visible'); }
 }
+async function openEmailMessage(name, subject, messageId) {
+  if (!currentUser?.email) return;
+  document.getElementById('msg-detail').style.display='';
+  document.getElementById('msg-detail-header').textContent = name + ' — Email';
+  document.getElementById('msg-detail-body').textContent = 'Loading...';
+  document.getElementById('msg-ai-reply').textContent = '';
+  const spinner = document.getElementById('msg-spinner');
+  spinner.classList.add('visible');
+  try {
+    const res = await fetch('/api/fetch-email-body?email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
+    const data = await res.json();
+    const body = data.body || subject;
+    currentMsgText = body; currentMsgChannel = 'Email';
+    document.getElementById('msg-detail-body').textContent = data.from ? data.from + '\n\n' + body : body;
+    document.getElementById('msg-ai-reply').textContent = await callAI(buildPrompt(body, '', 'email'));
+  } catch(e) {
+    document.getElementById('msg-detail-body').textContent = subject;
+    document.getElementById('msg-ai-reply').textContent = 'Could not load reply.';
+  } finally { spinner.classList.remove('visible'); }
+}
 function copyMsgReply() { navigator.clipboard.writeText(document.getElementById('msg-ai-reply').textContent).then(()=>showToast('Copied!')); }
 async function regenerateMsgReply() {
   document.getElementById('msg-ai-reply').textContent='';
@@ -949,7 +969,7 @@ async function loadRealEmails(userEmail) {
     const emailBadge = '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span>';
     // Inbox feed (all emails)
     if (inboxFeed) {
-      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item" onclick="openMessage(this,${JSON.stringify(e.name)},${JSON.stringify(e.snippet)},'Email')">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item" onclick="openEmailMessage(${JSON.stringify(e.name)},${JSON.stringify(e.subject)},${JSON.stringify(e.id)})">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
       // Update unread badge
       const unread = emails.filter(e=>e.isUnread).length;
       const badge = document.querySelector('.nav-badge');
@@ -1025,7 +1045,7 @@ window.showSection=showSection; window.showAdminSection=showAdminSection; window
 window.clearComposer=clearComposer; window.copyReply=copyReply; window.useTemplate=useTemplate;
 window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regenerateMsgReply=regenerateMsgReply;
 window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
-window.connectGmail=connectGmail; window.connectInstagram=connectInstagram;
+window.connectGmail=connectGmail; window.connectInstagram=connectInstagram; window.openEmailMessage=openEmailMessage;
 window.toggleSidebar=toggleSidebar;
 })();
 </script>
