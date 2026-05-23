@@ -1,10 +1,43 @@
 // api/fetch-emails.js
-// Handles two actions via ?action= query param:
+// Handles actions via ?action= query param:
 //   list  — returns recent Gmail inbox messages (default)
 //   body  — returns full body of a single message by ID
+//   send  — sends a reply via Gmail (POST, JSON body)
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+
+  // ── SEND (POST) ───────────────────────────────────────────────────────────
+  if (req.method === 'POST') {
+    const { email, to, subject, body, threadId } = req.body || {};
+    if (!email || !to || !body) return res.status(400).json({ error: 'email, to, body required' });
+    const tokenRecord = await getGmailTokens(email);
+    if (!tokenRecord) return res.status(404).json({ error: 'Not connected' });
+    try {
+      const accessToken = await getValidAccessToken(tokenRecord);
+      const replySubject = subject?.startsWith('Re:') ? subject : `Re: ${subject || ''}`;
+      const mime = [
+        `To: ${to}`,
+        `Subject: ${replySubject}`,
+        'Content-Type: text/plain; charset=utf-8',
+        'MIME-Version: 1.0',
+        '',
+        body,
+      ].join('\r\n');
+      const raw = Buffer.from(mime).toString('base64url');
+      const sendRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw, ...(threadId ? { threadId } : {}) }),
+      });
+      const result = await sendRes.json();
+      if (result.error) throw new Error(result.error.message);
+      return res.json({ ok: true, id: result.id });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
   const { email, action, messageId } = req.query;
   if (!email) return res.status(400).json({ error: 'email required' });
 

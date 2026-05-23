@@ -714,7 +714,7 @@ const orbytAuth = _sb(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bGZjcG9kd2d3cHFjcHdvZHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0ODAzNjMsImV4cCI6MjA5MzA1NjM2M30.NvMAXqO7XodqSB5c4iZNRnZGIzhc7qKzD6RDoUpQ0Tg'
 );
 const ADMIN_EMAILS = ['danizarg@gmail.com'];
-let currentUser = null, currentMsgText = '', currentMsgChannel = '';
+let currentUser = null, currentMsgText = '', currentMsgChannel = '', currentMsgTo = '', currentMsgSubject = '', currentMsgThreadId = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -910,7 +910,7 @@ async function openMessage(el,name,text,channel) {
   catch(e) { document.getElementById('msg-ai-reply').textContent='Could not load AI reply.'; }
   finally { spinner.classList.remove('visible'); }
 }
-async function openEmailMessage(name, subject, messageId) {
+async function openEmailMessage(name, subject, messageId, fromAddress, threadId) {
   if (!currentUser?.email) return;
   document.getElementById('msg-detail').style.display='block';
   document.getElementById('msg-detail-header').textContent = name + ' — Email';
@@ -922,7 +922,11 @@ async function openEmailMessage(name, subject, messageId) {
     const res = await fetch('/api/fetch-emails?action=body&email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
     const data = await res.json();
     const body = data.body || subject;
-    currentMsgText = body; currentMsgChannel = 'Email';
+    currentMsgText = body;
+    currentMsgChannel = 'Email';
+    currentMsgTo = fromAddress || data.from || '';
+    currentMsgSubject = data.subject || subject;
+    currentMsgThreadId = threadId || '';
     document.getElementById('msg-detail-body').textContent = data.from ? data.from + '\n\n' + body : body;
     document.getElementById('msg-ai-reply').textContent = await callAI(buildPrompt(body, '', 'email'));
   } catch(e) {
@@ -938,7 +942,24 @@ async function regenerateMsgReply() {
   catch(e) { document.getElementById('msg-ai-reply').textContent='Error.'; }
   finally { document.getElementById('msg-spinner').classList.remove('visible'); }
 }
-function sendReply() { showToast('Reply sent via '+currentMsgChannel+'!'); document.getElementById('msg-detail').style.display='none'; }
+async function sendReply() {
+  if (currentMsgChannel !== 'Email') { showToast('Reply sent via '+currentMsgChannel+'!'); document.getElementById('msg-detail').style.display='none'; return; }
+  const replyText = document.getElementById('msg-ai-reply').textContent;
+  if (!replyText || !currentUser?.email) return;
+  const btn = document.querySelector('#msg-detail .btn.primary');
+  if (btn) { btn.disabled=true; btn.textContent='Sending...'; }
+  try {
+    const res = await fetch('/api/fetch-emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: currentUser.email, to: currentMsgTo, subject: currentMsgSubject, body: replyText, threadId: currentMsgThreadId }),
+    });
+    const data = await res.json();
+    if (data.ok) { showToast('Reply sent!'); document.getElementById('msg-detail').style.display='none'; }
+    else showToast('Send failed: ' + (data.error || 'unknown error'));
+  } catch(e) { showToast('Send failed. Check your connection.'); }
+  finally { if (btn) { btn.disabled=false; btn.textContent='Send reply'; } }
+}
 function connectChannel(btn,name) { btn.textContent='Connecting...'; setTimeout(()=>{ btn.className='connect-btn connected'; btn.textContent='Connected'; showToast(name+' connected!'); },1200); }
 async function loadChannelStatus(email) {
   try {
@@ -971,7 +992,7 @@ async function loadRealEmails(userEmail) {
     if (inboxFeed) {
       inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
       inboxFeed.querySelectorAll('.feed-item').forEach((el, i) => {
-        el.addEventListener('click', () => openEmailMessage(emails[i].name, emails[i].subject, emails[i].id));
+        el.addEventListener('click', () => openEmailMessage(emails[i].name, emails[i].subject, emails[i].id, emails[i].from, emails[i].threadId));
       });
       // Update unread badge
       const unread = emails.filter(e=>e.isUnread).length;
