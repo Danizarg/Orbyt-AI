@@ -1,5 +1,5 @@
 // api/channel-status.js
-// Returns which channels a user has connected (Gmail, Instagram).
+// Returns which channels a user has connected (Gmail, Outlook, Instagram).
 // Called by the dashboard on every load to restore connected state.
 
 module.exports = async function handler(req, res) {
@@ -7,12 +7,13 @@ module.exports = async function handler(req, res) {
   const { email } = req.query;
   if (!email) return res.status(400).json({ error: 'email required' });
 
-  const [gmail, instagram] = await Promise.all([
+  const [gmail, outlook, instagram] = await Promise.all([
     checkGmail(email),
+    checkOutlook(email),
     checkInstagram(email),
   ]);
 
-  return res.json({ gmail, instagram });
+  return res.json({ gmail, outlook, instagram });
 };
 
 async function checkGmail(userEmail) {
@@ -25,6 +26,21 @@ async function checkGmail(userEmail) {
     const record = data.records?.[0];
     if (!record) return { connected: false };
     return { connected: true, inbox: record.fields.GmailAddress || '' };
+  } catch {
+    return { connected: false };
+  }
+}
+
+async function checkOutlook(userEmail) {
+  try {
+    const res = await fetch(
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${userEmail}"`,
+      { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
+    );
+    const data = await res.json();
+    const record = data.records?.[0];
+    if (!record) return { connected: false };
+    return { connected: true, inbox: record.fields.OutlookAddress || '' };
   } catch {
     return { connected: false };
   }

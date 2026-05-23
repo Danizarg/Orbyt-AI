@@ -1,20 +1,52 @@
 // api/fetch-emails.js
-// Handles actions via ?action= query param:
-//   list  — returns recent Gmail inbox messages (default)
-//   body  — returns full body of a single message by ID
-//   send  — sends a reply via Gmail (POST, JSON body)
+// Handles actions via ?action= and ?provider= query params:
+//   provider=gmail  (default) — Gmail API
+//   provider=outlook          — Microsoft Graph API
+//
+// GET  ?action=list  — recent inbox messages
+// GET  ?action=body  — full body of a single message by ID
+// POST              — send a reply
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
+  const { email, action, messageId, provider = 'gmail' } = req.query;
+
   // ── SEND (POST) ───────────────────────────────────────────────────────────
   if (req.method === 'POST') {
-    const { email, to, subject, body, threadId } = req.body || {};
-    if (!email || !to || !body) return res.status(400).json({ error: 'email, to, body required' });
-    const tokenRecord = await getGmailTokens(email);
-    if (!tokenRecord) return res.status(404).json({ error: 'Not connected' });
+    const { email: bodyEmail, to, subject, body, threadId, provider: bodyProvider } = req.body || {};
+    const senderEmail = bodyEmail;
+    const prov = bodyProvider || 'gmail';
+    if (!senderEmail || !to || !body) return res.status(400).json({ error: 'email, to, body required' });
+
     try {
-      const accessToken = await getValidAccessToken(tokenRecord);
+      if (prov === 'outlook') {
+        const tokenRecord = await getOutlookTokens(senderEmail);
+        if (!tokenRecord) return res.status(404).json({ error: 'Outlook not connected' });
+        const accessToken = await getValidOutlookToken(tokenRecord);
+        const replySubject = subject?.startsWith('Re:') ? subject : `Re: ${subject || ''}`;
+        const sendRes = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: {
+              subject: replySubject,
+              body: { contentType: 'Text', content: body },
+              toRecipients: [{ emailAddress: { address: to } }],
+            },
+            saveToSentItems: true,
+          }),
+        });
+        if (sendRes.status === 202) return res.json({ ok: true });
+        const result = await sendRes.json();
+        if (result.error) throw new Error(result.error.message);
+        return res.json({ ok: true });
+      }
+
+      // Gmail send
+      const tokenRecord = await getGmailTokens(senderEmail);
+      if (!tokenRecord) return res.status(404).json({ error: 'Gmail not connected' });
+      const accessToken = await getValidGmailToken(tokenRecord);
       const replySubject = subject?.startsWith('Re:') ? subject : `Re: ${subject || ''}`;
       const mime = [
         `To: ${to}`,
@@ -38,19 +70,83 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  const { email, action, messageId } = req.query;
   if (!email) return res.status(400).json({ error: 'email required' });
 
+  // ── OUTLOOK ───────────────────────────────────────────────────────────────
+  if (provider === 'outlook') {
+    const tokenRecord = await getOutlookTokens(email);
+    if (!tokenRecord) return res.json(action === 'body' ? { error: 'Not connected' } : { emails: [] });
+
+    try {
+      const accessToken = await getValidOutlookToken(tokenRecord);
+
+      if (action === 'body') {
+        if (!messageId) return res.status(400).json({ error: 'messageId required' });
+        const msgRes = await fetch(
+          `https://graph.microsoft.com/v1.0/me/messages/${messageId}?$select=subject,from,body,receivedDateTime,toRecipients,conversationId`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const msg = await msgRes.json();
+        const from = msg.from?.emailAddress?.address || '';
+        const fromName = msg.from?.emailAddress?.name || from;
+        const subject = msg.subject || '(no subject)';
+        const date = msg.receivedDateTime || '';
+        const bodyContent = msg.body?.content || '';
+        const bodyText = msg.body?.contentType === 'html'
+          ? bodyContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+          : bodyContent;
+
+        // Mark as read
+        await fetch(`https://graph.microsoft.com/v1.0/me/messages/${messageId}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isRead: true }),
+        });
+
+        return res.json({ from: `${fromName} <${from}>`, subject, date, body: bodyText.slice(0, 2000) });
+      }
+
+      // List inbox
+      const listRes = await fetch(
+        'https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=15&$select=id,conversationId,subject,from,receivedDateTime,bodyPreview,isRead',
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const listData = await listRes.json();
+      const messages = listData.value || [];
+      if (!messages.length) return res.json({ emails: [] });
+
+      const emails = messages.slice(0, 12).map(msg => {
+        const fromAddr = msg.from?.emailAddress?.address || '';
+        const fromName = msg.from?.emailAddress?.name || fromAddr;
+        return {
+          id: msg.id,
+          threadId: msg.conversationId || '',
+          name: fromName,
+          from: `${fromName} <${fromAddr}>`,
+          subject: msg.subject || '(no subject)',
+          snippet: (msg.bodyPreview || '').slice(0, 80),
+          date: msg.receivedDateTime || '',
+          isUnread: !msg.isRead,
+          provider: 'outlook',
+        };
+      });
+
+      return res.json({ emails });
+    } catch (err) {
+      console.error('fetch-emails outlook error:', err.message);
+      return res.json(action === 'body' ? { error: err.message } : { emails: [] });
+    }
+  }
+
+  // ── GMAIL (default) ───────────────────────────────────────────────────────
   const tokenRecord = await getGmailTokens(email);
   if (!tokenRecord) return res.json(action === 'body' ? { error: 'Not connected' } : { emails: [] });
 
   try {
-    const accessToken = await getValidAccessToken(tokenRecord);
+    const accessToken = await getValidGmailToken(tokenRecord);
 
-    // ── BODY: fetch full email content ────────────────────────────────────
     if (action === 'body') {
       if (!messageId) return res.status(400).json({ error: 'messageId required' });
-
       const msgRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -62,7 +158,6 @@ module.exports = async function handler(req, res) {
       const date    = headers.find(h => h.name === 'Date')?.value || '';
       const body    = extractBody(msg.payload);
 
-      // Mark as read
       await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -72,7 +167,7 @@ module.exports = async function handler(req, res) {
       return res.json({ from, subject, date, body: body.slice(0, 2000) });
     }
 
-    // ── LIST: recent inbox messages ───────────────────────────────────────
+    // List inbox
     const listRes = await fetch(
       'https://gmail.googleapis.com/gmail/v1/users/me/messages?labelIds=INBOX&maxResults=15',
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -99,6 +194,7 @@ module.exports = async function handler(req, res) {
             snippet: (msg.snippet || '').slice(0, 80),
             date,
             isUnread: msg.labelIds?.includes('UNREAD') || false,
+            provider: 'gmail',
           };
         })
         .catch(() => null)
@@ -107,11 +203,12 @@ module.exports = async function handler(req, res) {
 
     return res.json({ emails: emails.filter(Boolean) });
   } catch (err) {
-    console.error('fetch-emails error:', err.message);
+    console.error('fetch-emails gmail error:', err.message);
     return res.json(action === 'body' ? { error: err.message } : { emails: [] });
   }
 };
 
+// ── Body extraction ───────────────────────────────────────────────────────────
 function extractBody(payload) {
   if (!payload) return '';
   if (payload.mimeType === 'text/plain' && payload.body?.data)
@@ -132,6 +229,7 @@ function extractBody(payload) {
   return '';
 }
 
+// ── Gmail token helpers ───────────────────────────────────────────────────────
 async function getGmailTokens(userEmail) {
   const res = await fetch(
     `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${userEmail}"`,
@@ -141,7 +239,7 @@ async function getGmailTokens(userEmail) {
   return data.records?.[0]?.fields || null;
 }
 
-async function getValidAccessToken(record) {
+async function getValidGmailToken(record) {
   const expiresAt = new Date(record.ExpiresAt).getTime();
   if (Date.now() < expiresAt - 5 * 60 * 1000) return record.AccessToken;
   const t = await fetch('https://oauth2.googleapis.com/token', {
@@ -154,6 +252,34 @@ async function getValidAccessToken(record) {
       grant_type: 'refresh_token',
     }),
   }).then(r => r.json());
-  if (t.error) throw new Error('Token refresh failed');
+  if (t.error) throw new Error('Gmail token refresh failed');
+  return t.access_token;
+}
+
+// ── Outlook token helpers ─────────────────────────────────────────────────────
+async function getOutlookTokens(userEmail) {
+  const res = await fetch(
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${userEmail}"`,
+    { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
+  );
+  const data = await res.json();
+  return data.records?.[0]?.fields || null;
+}
+
+async function getValidOutlookToken(record) {
+  const expiresAt = new Date(record.ExpiresAt).getTime();
+  if (Date.now() < expiresAt - 5 * 60 * 1000) return record.AccessToken;
+  const t = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.OUTLOOK_CLIENT_ID,
+      client_secret: process.env.OUTLOOK_CLIENT_SECRET,
+      refresh_token: record.RefreshToken,
+      grant_type: 'refresh_token',
+      scope: 'offline_access Mail.Read Mail.Send User.Read',
+    }),
+  }).then(r => r.json());
+  if (t.error) throw new Error('Outlook token refresh failed');
   return t.access_token;
 }

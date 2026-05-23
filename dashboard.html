@@ -501,7 +501,8 @@ select.field-input option{background:var(--bg2)}
           <div class="card">
             <div class="card-title">Channel connections</div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--green-bg);color:var(--green-text);width:32px;height:32px;">WA</div><div><div class="settings-label">WhatsApp Business</div><div class="settings-sub">Via WATI API</div></div></div><button class="connect-btn" onclick="connectChannel(this,'WhatsApp')">Connect</button></div>
-            <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--blue-bg);color:var(--blue-text);width:32px;height:32px;">EM</div><div><div class="settings-label">Email (Gmail / any)</div><div class="settings-sub">Connect via Gmail OAuth</div></div></div><button id="gmail-connect-btn" class="connect-btn" onclick="connectGmail()">Connect</button></div>
+            <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--blue-bg);color:var(--blue-text);width:32px;height:32px;">GM</div><div><div class="settings-label">Email (Gmail)</div><div class="settings-sub">Google personal &amp; Workspace</div></div></div><button id="gmail-connect-btn" class="connect-btn" onclick="connectGmail()">Connect</button></div>
+            <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--blue-bg);color:var(--blue-text);width:32px;height:32px;">OL</div><div><div class="settings-label">Email (Microsoft / Outlook)</div><div class="settings-sub">Office 365 &amp; Outlook.com</div></div></div><button id="outlook-connect-btn" class="connect-btn" onclick="connectOutlook()">Connect</button></div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--pink-bg);color:var(--pink-text);width:32px;height:32px;">IG</div><div><div class="settings-label">Instagram DMs</div><div class="settings-sub">Via Meta Business API</div></div></div><button id="instagram-connect-btn-2" class="connect-btn" onclick="connectInstagram()">Connect</button></div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--coral-bg);color:var(--coral-text);width:32px;height:32px;">PH</div><div><div class="settings-label">Phone / SMS</div><div class="settings-sub">Via Twilio</div></div></div><button class="connect-btn" onclick="connectChannel(this,'Phone')">Connect</button></div>
             <div class="settings-row"><div style="display:flex;align-items:center;gap:10px;"><div class="ch-icon" style="background:var(--amber-bg);color:var(--amber-text);width:32px;height:32px;">CA</div><div><div class="settings-label">Calendly / Booking</div><div class="settings-sub">Sync appointments</div></div></div><button class="connect-btn" onclick="connectChannel(this,'Calendly')">Connect</button></div>
@@ -597,8 +598,9 @@ select.field-input option{background:var(--bg2)}
           <div class="grid-2" style="padding:0 0 16px;">
             <div class="card">
               <div class="card-title">Connection</div>
-              <div class="settings-row"><div><div class="settings-label">Connected inbox</div><div id="gmail-inbox-label" class="settings-sub">Not connected</div></div><button id="gmail-inbox-btn" class="connect-btn" onclick="connectGmail()">Connect</button></div>
-              <div class="settings-row"><div><div class="settings-label">Auto-draft replies</div><div class="settings-sub">AI drafts replies in Gmail</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="settings-row"><div><div class="settings-label">Gmail</div><div id="gmail-inbox-label" class="settings-sub">Not connected</div></div><button id="gmail-inbox-btn" class="connect-btn" onclick="connectGmail()">Connect</button></div>
+              <div class="settings-row"><div><div class="settings-label">Microsoft / Outlook</div><div id="outlook-inbox-label" class="settings-sub">Not connected</div></div><button id="outlook-inbox-btn" class="connect-btn" onclick="connectOutlook()">Connect</button></div>
+              <div class="settings-row"><div><div class="settings-label">Auto-draft replies</div><div class="settings-sub">AI drafts replies in your inbox</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
               <div class="settings-row"><div><div class="settings-label">Auto-send replies</div><div class="settings-sub">Send without manual review</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
               <div class="settings-row"><div><div class="settings-label">Review requests</div><div class="settings-sub">Send Google review link after appointments</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
             </div>
@@ -609,8 +611,11 @@ select.field-input option{background:var(--bg2)}
           </div>
           <div class="card">
             <div class="card-title">Connect a new inbox</div>
-            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:12px;">Connect any Gmail account. Non-Gmail accounts can forward to Gmail.</div>
-            <button class="btn primary" onclick="connectGmail()">Connect Gmail account</button>
+            <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:12px;">Connect Gmail or Microsoft Outlook. Both can be active at the same time.</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button class="btn primary" onclick="connectGmail()">Connect Gmail account</button>
+              <button class="btn" onclick="connectOutlook()">Connect Microsoft / Outlook</button>
+            </div>
           </div>
         </div>
       </div>
@@ -714,7 +719,7 @@ const orbytAuth = _sb(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bGZjcG9kd2d3cHFjcHdvZHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0ODAzNjMsImV4cCI6MjA5MzA1NjM2M30.NvMAXqO7XodqSB5c4iZNRnZGIzhc7qKzD6RDoUpQ0Tg'
 );
 const ADMIN_EMAILS = ['danizarg@gmail.com'];
-let currentUser = null, currentMsgText = '', currentMsgChannel = '', currentMsgTo = '', currentMsgSubject = '', currentMsgThreadId = '';
+let currentUser = null, currentMsgText = '', currentMsgChannel = '', currentMsgTo = '', currentMsgSubject = '', currentMsgThreadId = '', currentMsgProvider = 'gmail';
 
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -910,7 +915,7 @@ async function openMessage(el,name,text,channel) {
   catch(e) { document.getElementById('msg-ai-reply').textContent='Could not load AI reply.'; }
   finally { spinner.classList.remove('visible'); }
 }
-async function openEmailMessage(name, subject, messageId, fromAddress, threadId) {
+async function openEmailMessage(name, subject, messageId, fromAddress, threadId, provider) {
   if (!currentUser?.email) return;
   document.getElementById('msg-detail').style.display='block';
   document.getElementById('msg-detail-header').textContent = name + ' — Email';
@@ -919,11 +924,13 @@ async function openEmailMessage(name, subject, messageId, fromAddress, threadId)
   const spinner = document.getElementById('msg-spinner');
   spinner.classList.add('visible');
   try {
-    const res = await fetch('/api/fetch-emails?action=body&email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
+    const prov = provider || 'gmail';
+    const res = await fetch('/api/fetch-emails?action=body&provider=' + prov + '&email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
     const data = await res.json();
     const body = data.body || subject;
     currentMsgText = body;
     currentMsgChannel = 'Email';
+    currentMsgProvider = prov;
     currentMsgTo = fromAddress || data.from || '';
     currentMsgSubject = data.subject || subject;
     currentMsgThreadId = threadId || '';
@@ -952,7 +959,7 @@ async function sendReply() {
     const res = await fetch('/api/fetch-emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentUser.email, to: currentMsgTo, subject: currentMsgSubject, body: replyText, threadId: currentMsgThreadId }),
+      body: JSON.stringify({ email: currentUser.email, to: currentMsgTo, subject: currentMsgSubject, body: replyText, threadId: currentMsgThreadId, provider: currentMsgProvider }),
     });
     const data = await res.json();
     if (data.ok) { showToast('Reply sent!'); document.getElementById('msg-detail').style.display='none'; }
@@ -965,20 +972,30 @@ async function loadChannelStatus(email) {
   try {
     const res = await fetch('/api/channel-status?email=' + encodeURIComponent(email));
     const data = await res.json();
-    if (data.gmail?.connected) { setGmailConnected(data.gmail.inbox); loadRealEmails(email); }
+    const providers = [];
+    if (data.gmail?.connected) { setGmailConnected(data.gmail.inbox); providers.push('gmail'); }
+    if (data.outlook?.connected) { setOutlookConnected(data.outlook.inbox); providers.push('outlook'); }
     if (data.instagram?.connected) setInstagramConnected(data.instagram.account);
+    if (providers.length) loadRealEmails(email, providers);
   } catch(e) {}
 }
 
-async function loadRealEmails(userEmail) {
+async function loadRealEmails(userEmail, providers) {
   const inboxFeed = document.getElementById('inbox-feed');
   const emailFeed = document.getElementById('email-recent-feed');
   if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">Loading emails...</div>';
   try {
-    const res = await fetch('/api/fetch-emails?email=' + encodeURIComponent(userEmail));
-    const data = await res.json();
-    const emails = data.emails || [];
-    if (!emails.length) {
+    const providerList = providers || ['gmail'];
+    const results = await Promise.all(
+      providerList.map(p =>
+        fetch('/api/fetch-emails?email=' + encodeURIComponent(userEmail) + '&provider=' + p)
+          .then(r => r.json())
+          .then(d => d.emails || [])
+          .catch(() => [])
+      )
+    );
+    const allEmails = results.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (!allEmails.length) {
       if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">No emails in inbox yet.</div>';
       if (emailFeed) emailFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">No emails yet.</div>';
       return;
@@ -987,21 +1004,20 @@ async function loadRealEmails(userEmail) {
     const makeAvatar = (name, i) => { const [bg,fg] = colors[i % colors.length]; return `<div class="feed-avatar" style="background:${bg};color:${fg};">${(name||'?').slice(0,2).toUpperCase()}</div>`; };
     const makeTime = (dateStr) => { if (!dateStr) return ''; const d = new Date(dateStr); const diff = Date.now()-d.getTime(); if(diff<3600000) return Math.round(diff/60000)+'m ago'; if(diff<86400000) return Math.round(diff/3600000)+'h ago'; return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); };
     const newBadge = '<span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;">New</span>';
-    const emailBadge = '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span>';
-    // Inbox feed (all emails)
+    const provBadge = (p) => p === 'outlook'
+      ? '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Outlook</span>'
+      : '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Gmail</span>';
     if (inboxFeed) {
-      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      inboxFeed.innerHTML = allEmails.map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${provBadge(e.provider)}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
       inboxFeed.querySelectorAll('.feed-item').forEach((el, i) => {
-        el.addEventListener('click', () => openEmailMessage(emails[i].name, emails[i].subject, emails[i].id, emails[i].from, emails[i].threadId));
+        el.addEventListener('click', () => openEmailMessage(allEmails[i].name, allEmails[i].subject, allEmails[i].id, allEmails[i].from, allEmails[i].threadId, allEmails[i].provider));
       });
-      // Update unread badge
-      const unread = emails.filter(e=>e.isUnread).length;
+      const unread = allEmails.filter(e=>e.isUnread).length;
       const badge = document.querySelector('.nav-badge');
       if (badge) badge.textContent = unread || '';
     }
-    // Email section recent feed (last 3)
     if (emailFeed) {
-      emailFeed.innerHTML = emails.slice(0,3).map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      emailFeed.innerHTML = allEmails.slice(0,3).map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
     }
   } catch(err) {
     if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">Could not load emails.</div>';
@@ -1010,6 +1026,20 @@ async function loadRealEmails(userEmail) {
 function connectGmail() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
   window.location.href = '/api/connect-gmail?action=auth&state=' + encodeURIComponent(currentUser.email);
+}
+function connectOutlook() {
+  if (!currentUser?.email) { showToast('Please sign in first'); return; }
+  window.location.href = '/api/connect-gmail?action=auth&provider=outlook&state=' + encodeURIComponent(currentUser.email);
+}
+function setOutlookConnected(inbox) {
+  const label = document.getElementById('outlook-inbox-label');
+  if (label) label.textContent = inbox || 'Connected';
+  ['outlook-connect-btn','outlook-inbox-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = null; }
+  });
+  const pill = document.getElementById('email-status-pill');
+  if (pill) { pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected'; }
 }
 function connectInstagram() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
@@ -1045,6 +1075,12 @@ function checkOAuthCallbacks() {
     showToast('Gmail connected' + (inbox ? ': ' + inbox : '!'));
     window.history.replaceState({}, '', '/dashboard');
     showSection('email');
+  } else if (connected === 'outlook') {
+    const inbox = decodeURIComponent(params.get('inbox') || '');
+    setOutlookConnected(inbox);
+    showToast('Outlook connected' + (inbox ? ': ' + inbox : '!'));
+    window.history.replaceState({}, '', '/dashboard');
+    showSection('email');
   } else if (connected === 'instagram') {
     const account = decodeURIComponent(params.get('account') || '');
     setInstagramConnected(account);
@@ -1069,7 +1105,7 @@ window.showSection=showSection; window.showAdminSection=showAdminSection; window
 window.clearComposer=clearComposer; window.copyReply=copyReply; window.useTemplate=useTemplate;
 window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regenerateMsgReply=regenerateMsgReply;
 window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
-window.connectGmail=connectGmail; window.connectInstagram=connectInstagram; window.openEmailMessage=openEmailMessage;
+window.connectGmail=connectGmail; window.connectOutlook=connectOutlook; window.connectInstagram=connectInstagram; window.openEmailMessage=openEmailMessage; window.setOutlookConnected=setOutlookConnected;
 window.toggleSidebar=toggleSidebar;
 })();
 </script>
