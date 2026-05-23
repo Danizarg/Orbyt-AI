@@ -969,7 +969,10 @@ async function loadRealEmails(userEmail) {
     const emailBadge = '<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">Email</span>';
     // Inbox feed (all emails)
     if (inboxFeed) {
-      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item" data-msgid="${e.id}" data-name="${e.name.replace(/"/g,'&quot;')}" data-subject="${e.subject.replace(/"/g,'&quot;')}" onclick="openEmailMessage(this.dataset.name,this.dataset.subject,this.dataset.msgid)">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      inboxFeed.innerHTML = emails.map((e,i) => `<div class="feed-item">${makeAvatar(e.name,i)}<div class="feed-body"><div class="feed-name">${e.name}${emailBadge}${e.isUnread?newBadge:''}</div><div class="feed-msg">${e.subject}</div></div><div class="feed-time">${makeTime(e.date)}</div></div>`).join('');
+      inboxFeed.querySelectorAll('.feed-item').forEach((el, i) => {
+        el.addEventListener('click', () => openEmailMessage(emails[i].name, emails[i].subject, emails[i].id));
+      });
       // Update unread badge
       const unread = emails.filter(e=>e.isUnread).length;
       const badge = document.querySelector('.nav-badge');
