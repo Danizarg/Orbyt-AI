@@ -919,7 +919,7 @@ async function openEmailMessage(name, subject, messageId) {
   const spinner = document.getElementById('msg-spinner');
   spinner.classList.add('visible');
   try {
-    const res = await fetch('/api/fetch-email-body?email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
+    const res = await fetch('/api/fetch-emails?action=body&email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
     const data = await res.json();
     const body = data.body || subject;
     currentMsgText = body; currentMsgChannel = 'Email';
