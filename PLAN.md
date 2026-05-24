@@ -1,7 +1,7 @@
 # PLAN.md — Orbyt AI Project
 
 > Central memory and control document. Update at the end of every session.
-> Last updated: 2026-05-24 (session 4)
+> Last updated: 2026-05-24 (session 5)
 
 ---
 
@@ -73,17 +73,36 @@
 - WhatsApp integration ⬜
 
 ### Stage 7 — UI / Design Polish ✅
-- Glassmorphism applied across dashboard: `backdrop-filter: blur()` on topnav, sidebar, cards, toast, auth-card
-- Atmospheric background: `radial-gradient` purple/cyan orbs on `#app`, `.main` set transparent so gradient shows through
-- Animated primary button: gradient shimmer via `background-size: 200% auto` + `@keyframes btn-shimmer`
-- Section transitions: `fadeInUp` with spring easing `cubic-bezier(0.16, 1, 0.3, 1)`
-- Card hover: subtle purple border glow + lift shadow
-- Metric values: gradient text (`-webkit-background-clip: text`)
-- Toast: glassy background + spring enter/exit animation
-- Avatar: purple glow ring
-- Landing page phone mockup: fully animated — 3 random conversation scripts, messages appear one-by-one with typing indicator, loops continuously on every page refresh
+- Initial pass: glassmorphism + shimmer + glow shadows (session 3)
+- **De-vibe refactor (session 5):** flat surfaces with 1px borders, no backdrop-filter, no gradient text on values, no glow on hover/avatar/buttons. Real-product feel like Linear/Vercel/Stripe.
+- Animations refined to Emil Kowalski rules: `cubic-bezier(0.23,1,0.32,1)` easing, ≤300ms duration, ≤80ms stagger, 6–12px Y translate, 3–4px blur burn-off on headlines
+- Landing page phone mockup: 3 random AI conversation scripts, messages appear sequentially with typing indicator, loops continuously per page refresh
+- Reveal-on-scroll: `.reveal` uses transitions (not keyframes) so it's interruptible; staggered per-grid
 
-### Stage 8 — Polish & Production ⬜
+### Stage 8 — Light Theme ✅ (session 5)
+- `:root[data-theme="light"]` overrides all colour tokens
+- Inline `<head>` script reads `localStorage.orbyt-theme` (fallback to `prefers-color-scheme`) and sets `data-theme` before first paint — no flash
+- Sun/moon toggle in every top nav (dashboard, landing, contact). One choice persists across all three pages via shared localStorage key
+- New semantic tokens added so interactive states flip cleanly: `--surface-hover`, `--surface-active`, `--input-bg`, `--shadow-card`, `--nav-bg`, `--grid-line`, `--glow-opacity`
+- All hardcoded `rgba(255,255,255,X)` hovers replaced with the new tokens
+- Light palette: `#f7f8fa` bg, white surfaces, darker brand purple (`#4f3dcc`) for muted text/links, darker green/amber/coral text variants for contrast on white
+
+### Stage 9 — Connection Scaffold ✅ (session 4)
+- 33 integrations across 6 categories on the Connections page
+- 10 sidebar Channel entries (Email, WhatsApp, Instagram, Messenger, TikTok, Telegram, Phone & SMS, Reviews, Calendar, Chat widget)
+- 5 new section pages (Messenger, TikTok, Telegram, Reviews, Calendar) with metric cards + setup steps + automation toggles
+- `comingSoon(name)` toast for un-wired buttons. APIs wire up in later sessions
+
+### Stage 10 — Disconnect for every connection ✅ (session 5)
+- Connected button hovers (desktop) reveal "Disconnect" with coral styling via CSS-only swap
+- Touch devices (`@media (hover: none)`) show a small ✕ badge inside the button so the affordance is always visible
+- Wired services (Gmail / Outlook / Instagram) call `GET /api/channel-status?action=disconnect&provider=X&email=Y` which deletes the Airtable record
+- channel-status.js extended with `TABLES` map (provider→table name) + `findRecordId` + `deleteRecord` helpers
+- After disconnect: button reverts to "Connect", email status pill recomputes (stays "Connected" if other provider still on), inbox feed resets
+- Stub services use `disconnectStub` which flips the button back locally
+- **Still only 12 Vercel functions** — disconnect lives inside existing channel-status.js
+
+### Stage 11 — Polish & Production ⬜
 - Google OAuth app verification (requires demo video + scope justification)
 - Meta App Review (for instagram_manage_messages)
 - www → non-www redirect (via Vercel Dashboard domains, NOT vercel.json)
@@ -104,6 +123,7 @@
 - [x] vercel.json routes (12 functions at limit)
 - [ ] APP_URL env var = https://orbytai.org (fixes post-OAuth login screen)
 - [ ] www → non-www redirect via Vercel Dashboard (not vercel.json)
+- [ ] **Supabase → Authentication → URL Configuration**: Site URL = `https://orbytai.org`, Redirect URLs add `https://orbytai.org/dashboard` and `https://orbytai.org/**` (user said "tomorrow" — session 5)
 
 ### Gmail
 - [x] OAuth connect flow (connect-gmail.js)
@@ -148,9 +168,11 @@
 - [x] Click email → body preview + AI draft
 - [x] Send reply button sends real email (routes by provider)
 - [x] Connected state persists on refresh (channel-status.js)
-- [x] Glassmorphism UI — glassy cards, topnav, sidebar, toast
-- [x] Spring-eased section transitions and card hover effects
-- [x] Shimmer animated primary button
+- [x] De-vibed UI — flat surfaces, no glow, professional product feel
+- [x] Emil Kowalski-style text motion (spring easing, staggered reveals, ≤300ms)
+- [x] Full connection scaffold — 33 integrations, 10 sidebar channels, 5 new section pages
+- [x] Disconnect for every connection (real Airtable deletion for wired services)
+- [x] Dark / light theme toggle (system-aware, persists in localStorage)
 - [ ] Inbox auto-refresh every 30–60s
 - [ ] Instagram DMs appear in unified inbox
 - [ ] Toast/error handling improvements
@@ -169,9 +191,9 @@
 
 ## 4. Progress Percentage
 
-**Estimated: 72%**
+**Estimated: 80%**
 
-Gmail is fully working end-to-end. Outlook code is complete but blocked on Azure App Registration (user needs to go to entra.microsoft.com to create the app). Instagram code is written but not live (pending Meta App Review). WhatsApp is a stub. UI has been dramatically improved with glassmorphism, spring animations, and an animated phone mockup. Google OAuth verification is pending. The app is production-ready for Gmail-only businesses right now.
+Product surface is now feature-complete: 33-integration connection scaffold, working disconnect across the board, professional flat UI, full dark/light theme, fixed-up sign-in redirects, Emil Kowalski-grade text motion, contact-page mobile bug squashed. What's left is *wiring* (the 30 stub integrations are UI-ready and just need their OAuth/API plumbing), plus the manual external setup steps (Supabase URL config, Azure App Registration, Meta App Review, Google OAuth verification, APP_URL env var). The app is production-ready for Gmail-only businesses today.
 
 ---
 
@@ -179,25 +201,29 @@ Gmail is fully working end-to-end. Outlook code is complete but blocked on Azure
 
 Priority order:
 
-1. **Complete Azure App Registration** — Go to `entra.microsoft.com` → Applications → App registrations → New registration. Name: "Orbyt AI". Supported account types: "Accounts in any organizational directory and personal Microsoft accounts". Redirect URI (Web): `https://orbytai.org/api/connect-gmail`. Add delegated permissions: Mail.Read, Mail.Send, User.Read, offline_access. Create a client secret (copy value immediately — only shown once).
+1. **Fix Supabase URL configuration** — In Supabase Dashboard → Authentication → URL Configuration: set **Site URL** to `https://orbytai.org`, and add `https://orbytai.org/dashboard` and `https://orbytai.org/**` to the **Redirect URLs** allowlist. Without this, even with the new `window.location.origin` code (session 5), Supabase falls back to the old vercel preview URL after OAuth. User said they'd do this "tomorrow".
 
-2. **Create Airtable OutlookTokens table** — Fields: UserEmail (text), OutlookAddress (text), AccessToken (long text), RefreshToken (long text), ExpiresAt (text), Scope (text), CreatedAt (text).
+2. **Complete Azure App Registration** — Go to `entra.microsoft.com` → Applications → App registrations → New registration. Name: "Orbyt AI". Supported account types: "Accounts in any organizational directory and personal Microsoft accounts". Redirect URI (Web): `https://orbytai.org/api/connect-gmail`. Add delegated permissions: Mail.Read, Mail.Send, User.Read, offline_access. Create a client secret (copy value immediately — only shown once).
 
-3. **Add Outlook env vars to Vercel** — In Vercel Dashboard → Settings → Environment Variables: `OUTLOOK_CLIENT_ID`, `OUTLOOK_CLIENT_SECRET`, `OUTLOOK_REDIRECT_URI` = `https://orbytai.org/api/connect-gmail`. Redeploy after adding.
+3. **Create Airtable OutlookTokens table** — Fields: UserEmail (text), OutlookAddress (text), AccessToken (long text), RefreshToken (long text), ExpiresAt (text), Scope (text), CreatedAt (text).
 
-4. **Fix APP_URL env var** — In Vercel Dashboard → Settings → Environment Variables, set `APP_URL` to `https://orbytai.org`. Redeploy. Then reconnect Gmail. Fixes "shows login screen after OAuth" bug.
+4. **Add Outlook env vars to Vercel** — In Vercel Dashboard → Settings → Environment Variables: `OUTLOOK_CLIENT_ID`, `OUTLOOK_CLIENT_SECRET`, `OUTLOOK_REDIRECT_URI` = `https://orbytai.org/api/connect-gmail`. Redeploy after adding.
 
-5. **Inbox auto-refresh** — Add `setInterval(() => loadRealEmails(userEmail, connectedProviders), 45000)` in dashboard.html after initial load so new emails appear without manual refresh.
+5. **Fix APP_URL env var** — In Vercel Dashboard → Settings → Environment Variables, set `APP_URL` to `https://orbytai.org`. Redeploy. Then reconnect Gmail. Fixes "shows login screen after OAuth" bug.
 
-6. **Instagram DMs in unified inbox** — When Instagram is connected, fetch recent DMs from Graph API and merge them into the inbox feed alongside Gmail/Outlook messages.
+6. **Inbox auto-refresh** — Add `setInterval(() => loadRealEmails(userEmail, connectedProviders), 45000)` in dashboard.html after initial load so new emails appear without manual refresh.
 
-7. **Create Airtable InstagramTokens table** — Fields: UserEmail, PageId, PageName, PageAccessToken, InstagramAccountId, InstagramUsername, CreatedAt.
+7. **Instagram DMs in unified inbox** — When Instagram is connected, fetch recent DMs from Graph API and merge them into the inbox feed alongside Gmail/Outlook messages.
 
-8. **Meta Developer App setup** — Set App ID, Secret, redirect URI (`https://orbytai.org/api/connect-instagram`), configure webhook (`https://orbytai.org/api/instagram-webhook`), submit App Review.
+8. **Create Airtable InstagramTokens table** — Fields: UserEmail, PageId, PageName, PageAccessToken, InstagramAccountId, InstagramUsername, CreatedAt.
 
-9. **Google OAuth verification** — Record demo video, write scope justifications, submit at console.cloud.google.com.
+9. **Meta Developer App setup** — Set App ID, Secret, redirect URI (`https://orbytai.org/api/connect-instagram`), configure webhook (`https://orbytai.org/api/instagram-webhook`), submit App Review.
 
-10. **Loading states** — Add spinner/skeleton while inbox loads to improve perceived performance.
+10. **Google OAuth verification** — Record demo video, write scope justifications, submit at console.cloud.google.com.
+
+11. **Loading states** — Add spinner/skeleton while inbox loads to improve perceived performance.
+
+12. **Wire stub integrations one by one** — pick from the Session 4 table (Telegram bot is the easiest start: free, instant, no approval).
 
 ---
 
@@ -220,6 +246,13 @@ Priority order:
 | Meta App Review | instagram_manage_messages requires App Review before non-test users can connect Instagram. |
 | Azure Portal AADSTS16000 error | Personal Microsoft accounts get "interaction_required" error in Azure Portal. Use `entra.microsoft.com` instead of `portal.azure.com`. Click "Ignore" on popups and navigate via search bar. |
 | Microsoft 365 Developer Program (wrong portal) | M365 Developer Program is for sandbox Office subscriptions, not app registrations. For OAuth app registration, always use entra.microsoft.com → App registrations. |
+| Theme system without per-rule overrides | `:root[data-theme="light"]` flips all colour tokens at once. Inline `<head>` script sets the attribute *before* first paint, reading localStorage → `prefers-color-scheme`. Added semantic tokens (`--surface-hover`, `--surface-active`, `--input-bg`, `--shadow-card`, `--nav-bg`, `--grid-line`, `--glow-opacity`) so hardcoded `rgba(255,255,255,X)` hovers don't need per-rule fallbacks. |
+| Disconnect affordance without a separate button | One button shows "Connected" green by default; CSS `::after` swaps the label to "Disconnect" with coral styling on hover. `@media (hover: none)` shows a permanent ✕ badge for touch. The button's `onclick` is `disconnectGmail/Outlook/Instagram` (real Airtable delete) or `disconnectStub` (local-only). |
+| Real disconnect without a new Vercel function | Stayed within the 12-function limit by extending `channel-status.js` with `?action=disconnect&provider=X` — same file looks up the record by UserEmail in `{Provider}Tokens` and sends an Airtable `DELETE`. |
+| Sign-in landed on vercel preview URL instead of orbytai.org | `signInWithOAuth` / `resetPasswordForEmail` / `signUp` were hardcoded with `redirectTo: 'https://orbyt-ai-two.vercel.app/dashboard'`. Replaced with `window.location.origin + '/dashboard'`. **Code fix alone is insufficient** — Supabase dashboard must list `https://orbytai.org/dashboard` in Redirect URLs *and* have Site URL set to `https://orbytai.org`, or Supabase falls back to the Site URL on any URL not in the allowlist. |
+| Emil Kowalski motion rules vs first-pass animations | First-pass (session 3) used 550–700ms durations + 8px blur + `cubic-bezier(0.16,1,0.3,1)`. Tuned in session 5 against animations.dev: cap UI animations at 300ms, use exact `cubic-bezier(0.23,1,0.32,1)`, stagger ≤80ms gaps, Y translate 6–12px, blur 3–4px. Net result: hero finishes ~520ms after load (was ~1000ms). |
+| "Vibe-coded" AI-generated dashboard look | De-vibe pass: dropped radial purple/cyan orbs, backdrop-filter blur everywhere, gradient text on values, shimmer button animation, every glow box-shadow. Result is flat-surfaces + 1px borders, like Linear/Vercel/Stripe. Only intentional gradient uses now are the topnav wordmark and avatar. |
+| Mobile blank contact page | `.main` with `display:flex; align-items:center; min-height:100vh` pushed overflowing content *above* the document origin (flex centered-overflow). Switched to block layout under 768px with `margin:0 auto` on container. Dashboard auth screen already had the equivalent fix via `align-items:flex-start` in its mobile media query. |
 
 ---
 
@@ -232,6 +265,36 @@ Priority order:
 ---
 
 ## Session Log
+
+### 2026-05-24 (Session 5) — Polish, disconnect, light theme, redirect fix
+
+**Commits pushed (in order):**
+
+1. `4822745` — Emil Kowalski-style text motion on load (first pass)
+2. `2f94cac` — Tuned motion to actual Emil rules (≤300ms, exact easing, tighter stagger)
+3. `72b3147` — De-vibe the dashboard (flatten surfaces, kill glow shadows)
+4. `fba6e6f` — Fix blank contact page on mobile (flex centering bug)
+5. `33d1c63` — Full connection scaffold (33 integrations, 6 categories, 5 new pages)
+6. `a26a7e8` — PLAN.md session 4 log
+7. `c3f487d` — Disconnect for every connection (hover→Disconnect, real Airtable delete)
+8. `2e6ead3` — Light theme with system-aware toggle on all 3 pages
+9. `8acb145` — Fix sign-in redirect leaking the vercel preview URL
+10. `163b1be` — Also pass `emailRedirectTo` on signUp
+
+**Net additions:**
+- Text reveal animations applied to landing page + dashboard view switches
+- Dashboard de-vibed — flat surfaces, no glow, no shimmer, no gradient on metric values, no `backdrop-filter` blur. Connect buttons neutral with subtle hover.
+- Connection scaffold: 33 integrations across Messaging / Email / Calendar / Reviews / Voice / Web. 5 new section pages (Messenger, TikTok, Telegram, Reviews, Calendar) with metrics + setup steps + automation toggles
+- `comingSoon(name)` stub for the 30 un-wired buttons (just toast)
+- Disconnect: hover-swap label "Connected → Disconnect" with coral styling; touch fallback ✕ badge; real Airtable record delete for Gmail/Outlook/Instagram via `channel-status.js?action=disconnect`; stub flip for everything else
+- Light theme: full token override, inline pre-paint script, sun/moon toggle on every page, localStorage + `prefers-color-scheme`
+- Contact page mobile bug fixed (flex centering)
+- Sign-in/signup/reset redirects switched from hardcoded vercel preview URL to `window.location.origin`
+
+**Blocking on user (tomorrow):**
+- Supabase Dashboard → Auth → URL Configuration: set Site URL = `https://orbytai.org`, add `https://orbytai.org/dashboard` + `https://orbytai.org/**` to Redirect URLs. **Without this the redirect fix in code (commit 163b1be) won't take effect** — Supabase falls back to Site URL when the requested redirect isn't on the allowlist.
+
+**Vercel function count after this session:** still **12**. No new files. Disconnect was added inside `channel-status.js`.
 
 ### 2026-05-23 (Session 2)
 - Created PLAN.md as central project tracking document
