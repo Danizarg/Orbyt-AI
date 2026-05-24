@@ -4,15 +4,25 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#0a0b14" />
-<meta name="color-scheme" content="dark" />
+<meta name="color-scheme" content="dark light" />
 <title>ORBYT — AI that runs the boring half of your business</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="description" content="ORBYT is the AI operating system for small businesses. Bookings, auto-replies, customer comms, and analytics — handled. Built mobile-first for owners who run their business from their phone." />
+<script>
+// Set theme before render to avoid colour flash
+(function(){
+  try {
+    var stored = localStorage.getItem('orbyt-theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  } catch(e) {}
+})();
+</script>
 <style>
 /* ── Reset & Base ─────────────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:#0a0b14;color:#e6e8f0;font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;transition:background 0.2s ease-out,color 0.2s ease-out}
 a{color:inherit;text-decoration:none}
 ul{list-style:none}
 img,svg{display:block}
@@ -23,6 +33,8 @@ button{cursor:pointer;font-family:inherit}
 
 /* ── Tokens ───────────────────────────────────────────────────────────────── */
 :root{
+  --bg:#0a0b14;
+  --text:#e6e8f0;
   --purple:#7c5cff;
   --cyan:#22d3ee;
   --green:#10b981;
@@ -31,8 +43,23 @@ button{cursor:pointer;font-family:inherit}
   --border:rgba(255,255,255,.08);
   --text-muted:rgba(230,232,240,.55);
   --grad:linear-gradient(135deg,#7c5cff,#22d3ee);
+  --nav-bg:rgba(10,11,20,.8);
+  --grid-line:rgba(255,255,255,.03);
+  --glow-opacity:.18;
   --r:12px;
   --transition:.2s ease;
+}
+
+:root[data-theme="light"]{
+  --bg:#f7f8fa;
+  --text:#0d0e1a;
+  --surface:#ffffff;
+  --surface2:#f0f1f5;
+  --border:rgba(0,0,0,.08);
+  --text-muted:rgba(13,14,26,.6);
+  --nav-bg:rgba(247,248,250,.85);
+  --grid-line:rgba(0,0,0,.025);
+  --glow-opacity:.12;
 }
 
 /* ── Layout ───────────────────────────────────────────────────────────────── */
@@ -40,14 +67,14 @@ button{cursor:pointer;font-family:inherit}
 
 /* ── Animated background ──────────────────────────────────────────────────── */
 .orbit-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-.orbit-glow{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18}
+.orbit-glow{position:absolute;border-radius:50%;filter:blur(80px);opacity:var(--glow-opacity)}
 .orbit-glow--a{width:600px;height:600px;background:var(--purple);top:-200px;right:-100px;animation:drift 18s ease-in-out infinite alternate}
 .orbit-glow--b{width:500px;height:500px;background:var(--cyan);bottom:-150px;left:-100px;animation:drift 24s ease-in-out infinite alternate-reverse}
-.orbit-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:48px 48px}
+.orbit-grid{position:absolute;inset:0;background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:48px 48px}
 @keyframes drift{to{transform:translate(60px,40px)}}
 
 /* ── Navigation ───────────────────────────────────────────────────────────── */
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;border-bottom:1px solid var(--border);background:rgba(10,11,20,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;border-bottom:1px solid var(--border);background:var(--nav-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .nav__inner{display:flex;align-items:center;gap:2rem;height:64px}
 .brand{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.1rem;letter-spacing:-.02em}
 .brand__name{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -56,7 +83,7 @@ button{cursor:pointer;font-family:inherit}
 .nav__links a:hover{color:#fff}
 .nav__cta{display:flex;gap:.75rem;margin-left:1.5rem}
 .nav__toggle{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:.25rem}
-.nav__toggle span{display:block;width:22px;height:2px;background:#e6e8f0;border-radius:2px;transition:var(--transition)}
+.nav__toggle span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:var(--transition)}
 @media(max-width:768px){
   .nav__links{display:none}
   .nav__cta{display:none}
@@ -74,6 +101,14 @@ button{cursor:pointer;font-family:inherit}
 .btn--ghost:hover{background:var(--surface2);border-color:rgba(255,255,255,.15)}
 .btn--lg{padding:.875rem 1.75rem;font-size:1rem;border-radius:10px}
 .btn--block{width:100%;justify-content:center}
+
+/* ── Theme toggle ─────────────────────────────────────────────────────────── */
+.theme-toggle{background:transparent;border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:background var(--transition),border-color var(--transition),color var(--transition);flex-shrink:0}
+.theme-toggle:hover{border-color:rgba(255,255,255,.15);color:var(--text);background:var(--surface2)}
+:root[data-theme="light"] .theme-toggle:hover{border-color:rgba(0,0,0,.15);background:var(--surface2)}
+.theme-toggle .theme-icon-light{display:none}
+:root[data-theme="light"] .theme-toggle .theme-icon-dark{display:none}
+:root[data-theme="light"] .theme-toggle .theme-icon-light{display:block}
 
 /* ── Reveal animation — Emil-style ──────────────────────────────────────── */
 /* Custom ease-out per Emil: stronger than CSS built-in */
@@ -134,7 +169,7 @@ button{cursor:pointer;font-family:inherit}
 .grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero__sub{font-size:1.05rem;color:var(--text-muted);line-height:1.7;margin-bottom:2rem;max-width:480px}
 .hero__cta{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem}
-.hero__cta input{flex:1;min-width:200px;padding:.75rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:#e6e8f0;font-size:.9rem;outline:none;transition:border var(--transition)}
+.hero__cta input{flex:1;min-width:200px;padding:.75rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;outline:none;transition:border var(--transition)}
 .hero__cta input:focus{border-color:var(--purple)}
 .hero__cta-hint{font-size:.8rem;color:var(--text-muted);margin-top:.75rem;width:100%}
 .hero__trust{display:flex;gap:1.5rem;flex-wrap:wrap}
@@ -193,8 +228,8 @@ button{cursor:pointer;font-family:inherit}
 .section-head p{color:var(--text-muted);font-size:1.05rem;max-width:520px;margin-inline:auto;line-height:1.6}
 .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 @media(max-width:768px){.feature-grid{grid-template-columns:1fr}}
-.feature{background:rgba(10,11,20,0.7);backdrop-filter:blur(12px);padding:2rem;transition:background var(--transition),box-shadow var(--transition)}
-.feature:hover{background:rgba(18,20,31,0.85);box-shadow:inset 0 0 0 1px rgba(124,92,255,.12)}
+.feature{background:var(--surface);padding:2rem;transition:background var(--transition),box-shadow var(--transition)}
+.feature:hover{background:var(--surface2);box-shadow:inset 0 0 0 1px rgba(124,92,255,.12)}
 .feature__icon{width:40px;height:40px;border-radius:10px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;color:var(--purple)}
 .feature h3{font-size:1rem;font-weight:700;margin-bottom:.5rem}
 .feature p{font-size:.875rem;color:var(--text-muted);line-height:1.6}
@@ -203,7 +238,7 @@ button{cursor:pointer;font-family:inherit}
 .how{padding:100px 0;background:var(--surface)}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:0;counter-reset:steps}
 @media(max-width:768px){.steps{grid-template-columns:1fr}}
-.step{padding:2rem;background:rgba(18,20,31,0.55);backdrop-filter:blur(12px);border-radius:var(--r);border:1px solid rgba(255,255,255,.07);position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);transition:border-color var(--transition),box-shadow var(--transition)}
+.step{padding:2rem;background:var(--surface);border-radius:var(--r);border:1px solid var(--border);position:relative;transition:border-color var(--transition),box-shadow var(--transition)}
 .step:hover{border-color:rgba(124,92,255,.2);box-shadow:0 0 32px rgba(124,92,255,.07),inset 0 1px 0 rgba(255,255,255,.06)}
 .step__num{font-size:3rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:1rem;opacity:.4}
 .step h3{font-size:1rem;font-weight:700;margin-bottom:.5rem}
@@ -213,7 +248,7 @@ button{cursor:pointer;font-family:inherit}
 .pricing{padding:100px 0}
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
 @media(max-width:768px){.plans{grid-template-columns:1fr}}
-.plan{background:rgba(18,20,31,0.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:2rem;position:relative;transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.plan{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;position:relative;transition:transform var(--transition),box-shadow var(--transition),border-color var(--transition)}
 .plan:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.35),0 0 0 1px rgba(124,92,255,.15) inset}
 .plan--featured{border-color:rgba(124,92,255,.35);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));box-shadow:0 0 40px rgba(124,92,255,.12),inset 0 1px 0 rgba(255,255,255,.08)}
 .plan__tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:.7rem;font-weight:700;padding:.3rem .9rem;border-radius:20px;white-space:nowrap}
@@ -228,7 +263,7 @@ button{cursor:pointer;font-family:inherit}
 
 /* ── Testimonial ──────────────────────────────────────────────────────────── */
 .testimonial{padding:80px 0}
-.quote{background:rgba(18,20,31,0.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2.5rem;max-width:700px;margin-inline:auto;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 20px 60px rgba(0,0,0,.25)}
+.quote{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:700px;margin-inline:auto;box-shadow:0 12px 40px rgba(0,0,0,.15)}
 blockquote{font-size:1.15rem;line-height:1.7;color:#e6e8f0;font-style:italic;margin-bottom:1.5rem}
 blockquote::before{content:'\201C';font-size:3rem;color:var(--purple);line-height:.5;display:block;margin-bottom:.5rem}
 figcaption{display:flex;align-items:center;gap:.75rem}
@@ -239,7 +274,7 @@ figcaption span{font-size:.8rem;color:var(--text-muted)}
 /* ── FAQ ──────────────────────────────────────────────────────────────────── */
 .faq{padding:80px 0}
 .faq__list{max-width:680px;margin-inline:auto;margin-top:2.5rem;display:flex;flex-direction:column;gap:.75rem}
-details{background:rgba(18,20,31,0.55);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);overflow:hidden;transition:border-color var(--transition)}
+details{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color var(--transition)}
 details[open]{border-color:rgba(124,92,255,.2)}
 summary{padding:1.1rem 1.25rem;font-size:.95rem;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none;gap:1rem}
 summary::-webkit-details-marker{display:none}
@@ -266,7 +301,7 @@ details p{padding:0 1.25rem 1.1rem;font-size:.875rem;color:var(--text-muted);lin
 .footer__bottom small{font-size:.8rem;color:var(--text-muted)}
 
 /* ── Toast ────────────────────────────────────────────────────────────────── */
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#fff;color:#0a0b14;padding:.75rem 1.25rem;border-radius:10px;font-size:.875rem;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--text);color:var(--bg);padding:.75rem 1.25rem;border-radius:10px;font-size:.875rem;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .toast.show{opacity:1;transform:none}
 </style>
 </head>
@@ -302,6 +337,10 @@ details p{padding:0 1.25rem 1.1rem;font-size:.875rem;color:var(--text-muted);lin
       <a href="#faq">FAQ</a>
     </nav>
     <div class="nav__cta">
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark mode">
+        <svg class="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
       <a href="/dashboard" class="btn btn--ghost">Sign in</a>
       <a href="#pricing" class="btn btn--primary">Start free</a>
     </div>
@@ -646,10 +685,18 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Nav scroll effect
+// Nav scroll effect — let CSS variable handle the colour so it adapts to theme
 window.addEventListener('scroll', () => {
-  document.getElementById('nav').style.borderBottomColor = window.scrollY > 20 ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.08)';
+  const nav = document.getElementById('nav');
+  nav.style.borderBottomWidth = window.scrollY > 20 ? '1px' : '1px';
+  nav.style.opacity = '1';
 }, { passive: true });
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('orbyt-theme', 'dark'); }
+  else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('orbyt-theme', 'light'); }
+}
 
 // Lead form
 document.getElementById('leadForm').addEventListener('submit', (e) => {
