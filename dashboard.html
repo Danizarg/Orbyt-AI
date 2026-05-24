@@ -321,7 +321,19 @@ select.field-input option{background:var(--bg2)}
 .connect-btn.connected:hover{background:rgba(16,185,129,0.06);border-color:rgba(16,185,129,0.35)}
 
 /* ── CONNECTION ROW ICONS — muted ────────────────────────────────────────── */
-.conn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.conn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;letter-spacing:0.02em}
+
+/* ── CONNECTIONS PAGE — categories & badges ──────────────────────────────── */
+.conn-category{margin-bottom:14px}
+.conn-category-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 4px 8px;margin-top:8px}
+.conn-category-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3)}
+.conn-category-count{font-size:10px;font-weight:600;color:var(--text3);font-family:var(--font-mono)}
+.coming-soon{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);padding:3px 7px;border-radius:4px;background:rgba(255,255,255,0.04);border:1px solid var(--border);white-space:nowrap;flex-shrink:0}
+.conn-search{width:100%;padding:10px 14px 10px 38px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;transition:border-color 0.15s ease-out;margin-bottom:16px}
+.conn-search:focus{border-color:var(--border-md)}
+.conn-search::placeholder{color:var(--text3)}
+.conn-search-wrap{position:relative}
+.conn-search-icon{position:absolute;top:50%;left:14px;transform:translateY(-50%);color:var(--text3);pointer-events:none;margin-top:-8px}
 
 /* ── MSG DETAIL POLISH ───────────────────────────────────────────────────── */
 #msg-detail-body{color:var(--text2);white-space:pre-wrap;word-break:break-word;line-height:1.7}
@@ -431,10 +443,15 @@ select.field-input option{background:var(--bg2)}
       <div class="nav-item" onclick="showSection('compose')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 9.5-9.5z"/></svg>AI Composer</div>
       <div class="nav-item" onclick="showSection('bookings')"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bookings</div>
       <div class="nav-section">Channels</div>
-      <div class="nav-item" onclick="showSection('whatsapp')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp</div>
       <div class="nav-item" onclick="showSection('email')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email</div>
+      <div class="nav-item" onclick="showSection('whatsapp')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>WhatsApp</div>
       <div class="nav-item" onclick="showSection('instagram')"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</div>
-      <div class="nav-item" onclick="showSection('phone')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>Phone</div>
+      <div class="nav-item" onclick="showSection('messenger')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.6 7.2V22l3.3-1.8c.9.2 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2z"/><path d="M7 13.5l3-3 2 2 4-4-3 3-2-2z"/></svg>Messenger</div>
+      <div class="nav-item" onclick="showSection('tiktok')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M19 8.5a5 5 0 01-3-1V15a5 5 0 11-5-5"/><path d="M14 3v9.5"/></svg>TikTok</div>
+      <div class="nav-item" onclick="showSection('telegram')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>Telegram</div>
+      <div class="nav-item" onclick="showSection('phone')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>Phone &amp; SMS</div>
+      <div class="nav-item" onclick="showSection('reviews')"><svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Reviews</div>
+      <div class="nav-item" onclick="showSection('calendar')"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</div>
       <div class="nav-item" onclick="showSection('widget')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>Chat widget</div>
       <div class="nav-section">Settings</div>
       <div class="nav-item" onclick="showSection('ai-settings')"><svg class="nav-icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>AI behaviour</div>
@@ -586,17 +603,66 @@ select.field-input option{background:var(--bg2)}
 
       <!-- CONNECTIONS -->
       <div id="section-connect" class="view">
-        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Connections</div><div class="page-sub">Connect your channels to the AI</div></div></div>
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Connections</div><div class="page-sub">Connect every channel your business uses</div></div></div>
         <div style="padding:0 24px 24px;">
-          <div class="card">
-            <div class="card-title">Channel connections</div>
+
+          <!-- ── MESSAGING ── -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="conn-category-head"><div class="conn-category-title">Messaging</div><div class="conn-category-count">7 integrations</div></div>
             <div class="settings-row" style="padding:13px 0;">
               <div style="display:flex;align-items:center;gap:14px;">
                 <div class="conn-icon" style="background:rgba(37,211,102,0.12);color:#25d366;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-                <div><div class="settings-label">WhatsApp Business</div><div class="settings-sub">Connect via WATI API</div></div>
+                <div><div class="settings-label">WhatsApp Business (Meta Cloud)</div><div class="settings-sub">Official WhatsApp Business Platform via Meta</div></div>
               </div>
-              <button class="connect-btn" onclick="connectChannel(this,'WhatsApp')">Connect</button>
+              <button class="connect-btn" onclick="comingSoon('WhatsApp Cloud API')">Connect</button>
             </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(37,211,102,0.12);color:#25d366;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="13" cy="11" r="1" fill="currentColor"/><circle cx="17" cy="11" r="1" fill="currentColor"/></svg></div>
+                <div><div class="settings-label">WhatsApp via WATI</div><div class="settings-sub">Easier setup, no Meta verification needed</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('WATI')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(236,72,153,0.12);color:#ec4899;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div>
+                <div><div class="settings-label">Instagram DMs</div><div class="settings-sub">Auto-reply to direct messages</div></div>
+              </div>
+              <button id="instagram-connect-btn-2" class="connect-btn" onclick="connectInstagram()">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(0,132,255,0.12);color:#0084ff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.6 7.2V22l3.3-1.8c.9.2 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2z"/></svg></div>
+                <div><div class="settings-label">Facebook Messenger</div><div class="settings-sub">Reply to Page messages via Meta</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Facebook Messenger')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(34,158,217,0.12);color:#229ed9;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+                <div><div class="settings-label">Telegram Business</div><div class="settings-sub">Bot API + Telegram Business</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Telegram')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:#fff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 8.5a5 5 0 01-3-1V15a5 5 0 11-5-5"/><path d="M14 3v9.5"/></svg></div>
+                <div><div class="settings-label">TikTok Business Messaging</div><div class="settings-sub">Reply to DMs from TikTok customers</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('TikTok')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(239,68,68,0.12);color:#f87171;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+                <div><div class="settings-label">SMS (Twilio)</div><div class="settings-sub">Missed-call text-back &amp; appointment SMS</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Twilio SMS')">Connect</button>
+            </div>
+          </div>
+
+          <!-- ── EMAIL ── -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="conn-category-head"><div class="conn-category-title">Email</div><div class="conn-category-count">8 providers</div></div>
             <div class="settings-row" style="padding:13px 0;">
               <div style="display:flex;align-items:center;gap:14px;">
                 <div class="conn-icon" style="background:rgba(234,67,53,0.12);color:#ea4335;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
@@ -613,26 +679,194 @@ select.field-input option{background:var(--bg2)}
             </div>
             <div class="settings-row" style="padding:13px 0;">
               <div style="display:flex;align-items:center;gap:14px;">
-                <div class="conn-icon" style="background:rgba(236,72,153,0.12);color:#ec4899;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div>
-                <div><div class="settings-label">Instagram DMs</div><div class="settings-sub">Via Meta Business API</div></div>
+                <div class="conn-icon" style="background:rgba(96,1,210,0.14);color:#9b5dff;">Y!</div>
+                <div><div class="settings-label">Yahoo Mail</div><div class="settings-sub">Personal &amp; Yahoo Business</div></div>
               </div>
-              <button id="instagram-connect-btn-2" class="connect-btn" onclick="connectInstagram()">Connect</button>
+              <button class="connect-btn" onclick="comingSoon('Yahoo Mail')">Connect</button>
             </div>
             <div class="settings-row" style="padding:13px 0;">
               <div style="display:flex;align-items:center;gap:14px;">
-                <div class="conn-icon" style="background:rgba(239,68,68,0.12);color:#f87171;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
-                <div><div class="settings-label">Phone / SMS</div><div class="settings-sub">Via Twilio</div></div>
+                <div class="conn-icon" style="background:rgba(0,122,255,0.12);color:#5ac8fa;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg></div>
+                <div><div class="settings-label">iCloud Mail</div><div class="settings-sub">Apple ID with app-specific password</div></div>
               </div>
-              <button class="connect-btn" onclick="connectChannel(this,'Phone')">Connect</button>
+              <button class="connect-btn" onclick="comingSoon('iCloud Mail')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(109,74,255,0.14);color:#a89cff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                <div><div class="settings-label">ProtonMail</div><div class="settings-sub">Encrypted email via Proton Bridge</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('ProtonMail')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(228,37,39,0.14);color:#f87171;">Z</div>
+                <div><div class="settings-label">Zoho Mail</div><div class="settings-sub">Zoho Workplace business email</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Zoho Mail')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(44,112,181,0.14);color:#60a5fa;">FM</div>
+                <div><div class="settings-label">Fastmail</div><div class="settings-sub">JMAP / IMAP via app password</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Fastmail')">Connect</button>
             </div>
             <div class="settings-row" style="padding:13px 0;border-bottom:none;">
               <div style="display:flex;align-items:center;gap:14px;">
-                <div class="conn-icon" style="background:rgba(245,158,11,0.12);color:#fcd34d;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-                <div><div class="settings-label">Calendly / Booking</div><div class="settings-sub">Sync appointments</div></div>
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:var(--text2);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+                <div><div class="settings-label">Custom IMAP / SMTP</div><div class="settings-sub">Any provider — manual server config</div></div>
               </div>
-              <button class="connect-btn" onclick="connectChannel(this,'Calendly')">Connect</button>
+              <button class="connect-btn" onclick="comingSoon('Custom IMAP/SMTP')">Connect</button>
             </div>
           </div>
+
+          <!-- ── CALENDAR & BOOKING ── -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="conn-category-head"><div class="conn-category-title">Calendar &amp; booking</div><div class="conn-category-count">7 integrations</div></div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(66,133,244,0.14);color:#4285f4;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div><div class="settings-label">Google Calendar</div><div class="settings-sub">Sync appointments &amp; availability</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Google Calendar')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(0,120,212,0.12);color:#0078d4;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg></div>
+                <div><div class="settings-label">Outlook Calendar</div><div class="settings-sub">Microsoft 365 calendar sync</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Outlook Calendar')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(0,122,255,0.12);color:#5ac8fa;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div><div class="settings-label">Apple iCloud Calendar</div><div class="settings-sub">CalDAV via app-specific password</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('iCloud Calendar')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(0,107,255,0.14);color:#3b82f6;">C</div>
+                <div><div class="settings-label">Calendly</div><div class="settings-sub">Auto-book appointments from chats</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Calendly')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:#fff;">c</div>
+                <div><div class="settings-label">Cal.com</div><div class="settings-sub">Open-source booking platform</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Cal.com')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(255,142,71,0.14);color:#fb923c;">A</div>
+                <div><div class="settings-label">Acuity Scheduling</div><div class="settings-sub">By Squarespace</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Acuity')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:#fff;">S</div>
+                <div><div class="settings-label">Square Appointments</div><div class="settings-sub">Booking + payments in one</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Square Appointments')">Connect</button>
+            </div>
+          </div>
+
+          <!-- ── REVIEWS & REPUTATION ── -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="conn-category-head"><div class="conn-category-title">Reviews &amp; reputation</div><div class="conn-category-count">5 platforms</div></div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(66,133,244,0.14);color:#4285f4;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                <div><div class="settings-label">Google Business Profile</div><div class="settings-sub">Auto-reply to reviews &amp; send review links</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Google Business Profile')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(211,35,35,0.14);color:#f87171;">Y</div>
+                <div><div class="settings-label">Yelp for Business</div><div class="settings-sub">Reply to Yelp reviews &amp; messages</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Yelp')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(0,175,135,0.14);color:#34d399;">TA</div>
+                <div><div class="settings-label">Tripadvisor</div><div class="settings-sub">For hospitality &amp; tourism businesses</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Tripadvisor')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(0,182,122,0.14);color:#34d399;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div>
+                <div><div class="settings-label">Trustpilot</div><div class="settings-sub">Monitor &amp; reply to Trustpilot reviews</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Trustpilot')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(24,119,242,0.14);color:#60a5fa;">F</div>
+                <div><div class="settings-label">Facebook Reviews</div><div class="settings-sub">Auto-reply to Page recommendations</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Facebook Reviews')">Connect</button>
+            </div>
+          </div>
+
+          <!-- ── VOICE & PHONE ── -->
+          <div class="card" style="margin-bottom:14px;">
+            <div class="conn-category-head"><div class="conn-category-title">Voice &amp; phone</div><div class="conn-category-count">4 providers</div></div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(242,47,70,0.14);color:#f87171;">T</div>
+                <div><div class="settings-label">Twilio Voice &amp; SMS</div><div class="settings-sub">Phone numbers + SMS + call routing</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Twilio Voice')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(90,103,216,0.14);color:#a89cff;">V</div>
+                <div><div class="settings-label">Vapi AI Voice</div><div class="settings-sub">AI agent answers calls in your voice</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Vapi')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(139,92,246,0.14);color:#a89cff;">B</div>
+                <div><div class="settings-label">Bland.ai</div><div class="settings-sub">AI phone agent — books, qualifies, follows up</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Bland.ai')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(135,26,91,0.14);color:#f472b6;">V</div>
+                <div><div class="settings-label">Vonage</div><div class="settings-sub">Alternative to Twilio (EU-friendly pricing)</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Vonage')">Connect</button>
+            </div>
+          </div>
+
+          <!-- ── WEBSITE & WIDGETS ── -->
+          <div class="card">
+            <div class="conn-category-head"><div class="conn-category-title">Website</div><div class="conn-category-count">2 options</div></div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(99,82,255,0.14);color:#a89cff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+                <div><div class="settings-label">Orbyt chat widget</div><div class="settings-sub">Embed AI chat on your website</div></div>
+              </div>
+              <button class="connect-btn" onclick="showSection('widget')">Set up</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:var(--text2);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+                <div><div class="settings-label">Contact form forwarding</div><div class="settings-sub">Forward your website form submissions to AI</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Contact form forwarding')">Connect</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -738,6 +972,27 @@ select.field-input option{background:var(--bg2)}
                 </div>
                 <button id="outlook-inbox-btn" class="connect-btn" onclick="connectOutlook()">Connect</button>
               </div>
+              <div class="settings-row" style="padding:12px 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div class="conn-icon" style="background:rgba(96,1,210,0.14);color:#9b5dff;width:36px;height:36px;border-radius:9px;">Y!</div>
+                  <div><div class="settings-label">Yahoo Mail</div><div class="settings-sub">Not connected</div></div>
+                </div>
+                <button class="connect-btn" onclick="comingSoon('Yahoo Mail')">Connect</button>
+              </div>
+              <div class="settings-row" style="padding:12px 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div class="conn-icon" style="background:rgba(0,122,255,0.12);color:#5ac8fa;width:36px;height:36px;border-radius:9px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg></div>
+                  <div><div class="settings-label">iCloud Mail</div><div class="settings-sub">Not connected</div></div>
+                </div>
+                <button class="connect-btn" onclick="comingSoon('iCloud Mail')">Connect</button>
+              </div>
+              <div class="settings-row" style="padding:12px 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div class="conn-icon" style="background:rgba(255,255,255,0.05);color:var(--text2);width:36px;height:36px;border-radius:9px;">+</div>
+                  <div><div class="settings-label">Other / custom IMAP</div><div class="settings-sub">ProtonMail, Zoho, Fastmail, custom server</div></div>
+                </div>
+                <button class="connect-btn" onclick="showSection('connect')">Browse</button>
+              </div>
               <div class="settings-row"><div><div class="settings-label">Auto-draft replies</div><div class="settings-sub">AI drafts replies in your inbox</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
               <div class="settings-row"><div><div class="settings-label">Auto-send replies</div><div class="settings-sub">Send without manual review</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
               <div class="settings-row"><div><div class="settings-label">Review requests</div><div class="settings-sub">Send Google review link after appointments</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
@@ -834,6 +1089,231 @@ select.field-input option{background:var(--bg2)}
             <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">Paste this code before the &lt;/body&gt; tag on your website:</div>
             <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);line-height:1.7;" id="widget-code">&lt;script src="https://orbyt-ai.vercel.app/widget.js"<br>&nbsp;&nbsp;data-client="your-business-slug"<br>&nbsp;&nbsp;data-color="#1D9E75"&gt;<br>&lt;/script&gt;</div>
             <button class="btn" style="margin-top:10px;" onclick="navigator.clipboard.writeText(document.getElementById('widget-code').innerText).then(()=>showToast('Code copied!'))">Copy embed code</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FACEBOOK MESSENGER -->
+      <div id="section-messenger" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Facebook Messenger</div><div class="page-sub">Auto-reply to Page messages</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Connect Messenger</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">Link your Facebook Page so the AI can reply to incoming Messenger conversations in real time.</div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(0,132,255,0.12);color:#0084ff;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.6 7.2V22l3.3-1.8c.9.2 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2z"/></svg></div>
+                <div><div class="settings-label">Facebook Page</div><div class="settings-sub">Requires Page admin access</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Facebook Messenger')">Connect</button>
+            </div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to messages</div><div class="settings-sub">AI responds to incoming Messenger chats</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to post comments</div><div class="settings-sub">AI handles Page post comments</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Business hours only</div><div class="settings-sub">Only auto-reply during open hours</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Setup instructions</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+              <div>1. Make sure you're an admin of the Facebook Page you want to connect</div>
+              <div>2. Click <strong>Connect</strong> above — you'll be redirected to Meta to authorize</div>
+              <div>3. Grant the <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;">pages_messaging</code> permission</div>
+              <div>4. Pick the Page from the list and you're live</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIKTOK -->
+      <div id="section-tiktok" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">TikTok Business</div><div class="page-sub">Auto-reply to TikTok DMs &amp; comments</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Connect TikTok</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">Link your TikTok Business account so the AI can answer DMs, reply to comments and handle lead-gen forms.</div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:#fff;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 8.5a5 5 0 01-3-1V15a5 5 0 11-5-5"/><path d="M14 3v9.5"/></svg></div>
+                <div><div class="settings-label">TikTok Business account</div><div class="settings-sub">Requires a Business or Creator account</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('TikTok Business')">Connect</button>
+            </div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to DMs</div><div class="settings-sub">AI responds to incoming direct messages</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to comments</div><div class="settings-sub">AI handles comments on your videos</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Capture leads from bio link</div><div class="settings-sub">Sync TikTok lead gen form submissions</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Setup instructions</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+              <div>1. Switch your TikTok account to <strong>Business</strong> mode in app settings</div>
+              <div>2. Apply for TikTok for Business Messaging API access at <strong>business-api.tiktok.com</strong></div>
+              <div>3. Click <strong>Connect</strong> above once approved to link your account</div>
+              <div>4. Webhook will fire on every new DM &amp; comment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TELEGRAM -->
+      <div id="section-telegram" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Telegram Business</div><div class="page-sub">AI replies on Telegram</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Connect Telegram</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">Create a Telegram bot or link a Telegram Business account so the AI can chat with your customers.</div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(34,158,217,0.14);color:#22d3ee;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+                <div><div class="settings-label">Telegram Bot</div><div class="settings-sub">Free — works for any account</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Telegram Bot')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(34,158,217,0.14);color:#22d3ee;width:38px;height:38px;border-radius:10px;">★</div>
+                <div><div class="settings-label">Telegram Business</div><div class="settings-sub">Premium accounts only — Apr 2024+ feature</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Telegram Business')">Connect</button>
+            </div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to chats</div><div class="settings-sub">AI handles every conversation</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Inline booking</div><div class="settings-sub">Customers book directly inside Telegram</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Setup instructions (Bot method)</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+              <div>1. Open Telegram and chat with <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;">@BotFather</code></div>
+              <div>2. Send <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;">/newbot</code> and follow the prompts</div>
+              <div>3. Copy the API token BotFather gives you</div>
+              <div>4. Paste it in the field that appears after clicking Connect above</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div id="section-reviews" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Reviews &amp; reputation</div><div class="page-sub">Auto-reply to reviews across every platform</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="metrics">
+            <div class="metric"><div class="metric-label">Avg rating</div><div class="metric-value">—</div><div class="metric-delta neutral">connect a source</div></div>
+            <div class="metric"><div class="metric-label">Total reviews</div><div class="metric-value">—</div><div class="metric-delta neutral">connect a source</div></div>
+            <div class="metric"><div class="metric-label">Replied this week</div><div class="metric-value">—</div><div class="metric-delta neutral">connect a source</div></div>
+            <div class="metric"><div class="metric-label">Review requests sent</div><div class="metric-value">—</div><div class="metric-delta neutral">enable in settings</div></div>
+          </div>
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Review sources</div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(66,133,244,0.14);color:#4285f4;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                <div><div class="settings-label">Google Business Profile</div><div class="settings-sub">The #1 review source for most local businesses</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Google Business Profile')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(211,35,35,0.14);color:#f87171;width:38px;height:38px;border-radius:10px;">Y</div>
+                <div><div class="settings-label">Yelp for Business</div><div class="settings-sub">Reviews + messages from Yelp users</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Yelp')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(0,175,135,0.14);color:#34d399;width:38px;height:38px;border-radius:10px;">TA</div>
+                <div><div class="settings-label">Tripadvisor</div><div class="settings-sub">For hospitality, restaurants, tours</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Tripadvisor')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(0,182,122,0.14);color:#34d399;width:38px;height:38px;border-radius:10px;">★</div>
+                <div><div class="settings-label">Trustpilot</div><div class="settings-sub">Common for online &amp; service businesses</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Trustpilot')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(24,119,242,0.14);color:#60a5fa;width:38px;height:38px;border-radius:10px;">F</div>
+                <div><div class="settings-label">Facebook Reviews</div><div class="settings-sub">Recommendations from your Facebook Page</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Facebook Reviews')">Connect</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Automation settings</div>
+            <div class="settings-row"><div><div class="settings-label">Auto-reply to positive reviews</div><div class="settings-sub">4 &amp; 5 star reviews get a warm thank-you reply</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Draft replies to negative reviews</div><div class="settings-sub">AI drafts but waits for your approval before sending</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Send review request after each booking</div><div class="settings-sub">Asks customer for review 1 hour post-appointment</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Negative-review alert</div><div class="settings-sub">Email/WhatsApp alert when a 1-3 star review is left</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="section-calendar" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Calendar &amp; booking</div><div class="page-sub">So the AI knows when you're available</div></div><span class="status-pill" style="background:var(--amber-bg);color:var(--amber-text);">Not connected</span></div>
+        <div style="padding:0 24px 24px;">
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Connect your calendar</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">Sync availability so the AI can book appointments directly from any conversation.</div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(66,133,244,0.14);color:#4285f4;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div><div class="settings-label">Google Calendar</div><div class="settings-sub">Best for most local businesses</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Google Calendar')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(0,120,212,0.12);color:#0078d4;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div><div class="settings-label">Outlook Calendar</div><div class="settings-sub">Microsoft 365 &amp; Outlook.com</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Outlook Calendar')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(0,122,255,0.12);color:#5ac8fa;width:38px;height:38px;border-radius:10px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/></svg></div>
+                <div><div class="settings-label">Apple iCloud Calendar</div><div class="settings-sub">CalDAV via app-specific password</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('iCloud Calendar')">Connect</button>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">Booking tools</div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(0,107,255,0.14);color:#3b82f6;width:38px;height:38px;border-radius:10px;">C</div>
+                <div><div class="settings-label">Calendly</div><div class="settings-sub">Most popular external booking link</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Calendly')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:#fff;width:38px;height:38px;border-radius:10px;">c</div>
+                <div><div class="settings-label">Cal.com</div><div class="settings-sub">Open-source alternative</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Cal.com')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(255,142,71,0.14);color:#fb923c;width:38px;height:38px;border-radius:10px;">A</div>
+                <div><div class="settings-label">Acuity Scheduling</div><div class="settings-sub">By Squarespace</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Acuity')">Connect</button>
+            </div>
+            <div class="settings-row" style="padding:13px 0;border-bottom:none;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="conn-icon" style="background:rgba(255,255,255,0.06);color:#fff;width:38px;height:38px;border-radius:10px;">S</div>
+                <div><div class="settings-label">Square Appointments</div><div class="settings-sub">Booking + payments together</div></div>
+              </div>
+              <button class="connect-btn" onclick="comingSoon('Square Appointments')">Connect</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Booking rules</div>
+            <div class="settings-row"><div><div class="settings-label">Default appointment length</div><div class="settings-sub">How long the AI books slots for</div></div><select class="field-input" style="width:auto;min-width:130px;"><option>30 minutes</option><option>45 minutes</option><option>1 hour</option><option>1.5 hours</option><option>2 hours</option></select></div>
+            <div class="settings-row"><div><div class="settings-label">Buffer between appointments</div><div class="settings-sub">Time the AI leaves between bookings</div></div><select class="field-input" style="width:auto;min-width:130px;"><option>None</option><option>5 minutes</option><option>10 minutes</option><option>15 minutes</option><option>30 minutes</option></select></div>
+            <div class="settings-row"><div><div class="settings-label">Require deposit</div><div class="settings-sub">Stripe deposit before booking is confirmed</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Reminder 24h before</div><div class="settings-sub">Auto-SMS / WhatsApp reminder day before</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="settings-row"><div><div class="settings-label">Reminder 1h before</div><div class="settings-sub">Final nudge so they don't no-show</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
           </div>
         </div>
       </div>
@@ -1112,6 +1592,7 @@ async function sendReply() {
   finally { if (btn) { btn.disabled=false; btn.textContent='Send reply'; } }
 }
 function connectChannel(btn,name) { btn.textContent='Connecting...'; setTimeout(()=>{ btn.className='connect-btn connected'; btn.textContent='Connected'; showToast(name+' connected!'); },1200); }
+function comingSoon(name) { showToast(name + ' — setup wiring up next session. UI is ready.'); }
 async function loadChannelStatus(email) {
   try {
     const res = await fetch('/api/channel-status?email=' + encodeURIComponent(email));
@@ -1250,7 +1731,7 @@ window.clearComposer=clearComposer; window.copyReply=copyReply; window.useTempla
 window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regenerateMsgReply=regenerateMsgReply;
 window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
 window.connectGmail=connectGmail; window.connectOutlook=connectOutlook; window.connectInstagram=connectInstagram; window.openEmailMessage=openEmailMessage; window.setOutlookConnected=setOutlookConnected;
-window.toggleSidebar=toggleSidebar;
+window.toggleSidebar=toggleSidebar; window.comingSoon=comingSoon;
 })();
 </script>
 </body>
