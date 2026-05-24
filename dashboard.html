@@ -1494,7 +1494,7 @@ async function signIn() {
 async function signInWithGoogle() {
   await orbytAuth.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://orbyt-ai-two.vercel.app/dashboard' }
+    options: { redirectTo: window.location.origin + '/dashboard' }
   });
 }
 
@@ -1504,7 +1504,7 @@ async function resetPassword() {
   const succEl = document.getElementById('reset-success');
   errEl.classList.remove('visible'); succEl.classList.remove('visible');
   if (!email) { errEl.textContent='Enter your email.'; errEl.classList.add('visible'); return; }
-  const { error } = await orbytAuth.auth.resetPasswordForEmail(email, { redirectTo: 'https://orbyt-ai-two.vercel.app/dashboard' });
+  const { error } = await orbytAuth.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/dashboard' });
   if (error) { errEl.textContent=error.message; errEl.classList.add('visible'); }
   else { succEl.textContent='Reset link sent! Check your email.'; succEl.classList.add('visible'); }
 }
