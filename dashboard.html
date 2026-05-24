@@ -192,8 +192,33 @@ a{color:inherit;text-decoration:none}
 .client-revenue{font-size:12px;font-weight:500;color:var(--text);font-family:var(--font-mono);width:52px;text-align:right}
 .dot-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .view{display:none}
-.view.active{display:block;animation:fadeInUp 0.28s cubic-bezier(0.16,1,0.3,1)}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(16px) scale(0.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.view.active{display:block}
+.view.active>*{animation:textRise 0.55s cubic-bezier(0.16,1,0.3,1) both}
+.view.active>:nth-child(1){animation-delay:0ms}
+.view.active>:nth-child(2){animation-delay:60ms}
+.view.active>:nth-child(3){animation-delay:120ms}
+.view.active>:nth-child(4){animation-delay:180ms}
+.view.active>:nth-child(5){animation-delay:240ms}
+@keyframes textRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* Stagger inside metric & card grids */
+.view.active .metrics .metric{animation:textRise 0.55s cubic-bezier(0.16,1,0.3,1) both}
+.view.active .metrics .metric:nth-child(1){animation-delay:140ms}
+.view.active .metrics .metric:nth-child(2){animation-delay:200ms}
+.view.active .metrics .metric:nth-child(3){animation-delay:260ms}
+.view.active .metrics .metric:nth-child(4){animation-delay:320ms}
+.view.active .grid-2 .card{animation:textRise 0.6s cubic-bezier(0.16,1,0.3,1) both}
+.view.active .grid-2 .card:nth-child(1){animation-delay:280ms}
+.view.active .grid-2 .card:nth-child(2){animation-delay:360ms}
+
+/* Page-title shimmer in */
+.page-title{animation:titleSlide 0.6s cubic-bezier(0.16,1,0.3,1) both}
+.page-sub{animation:titleSlide 0.6s cubic-bezier(0.16,1,0.3,1) both;animation-delay:80ms}
+@keyframes titleSlide{from{opacity:0;transform:translateY(10px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+
+/* Metric value gentle scale-in */
+.view.active .metric-value{animation:valueRise 0.7s cubic-bezier(0.16,1,0.3,1) both;animation-delay:400ms}
+@keyframes valueRise{from{opacity:0;transform:translateY(6px) scale(0.96)}to{opacity:1;transform:none}}
 .toast{position:fixed;bottom:24px;right:24px;background:rgba(26,29,46,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:10px 16px;border-radius:var(--r);font-size:13px;opacity:0;transform:translateY(10px) scale(0.97);transition:all 0.22s cubic-bezier(0.16,1,0.3,1);pointer-events:none;z-index:200;box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(99,82,255,0.08)}
 .toast.show{opacity:1;transform:translateY(0) scale(1)}
 .field-input{width:100%;font-size:13px;color:var(--text);padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:var(--r);border:1px solid var(--border-md);font-family:var(--font);outline:none;transition:border 0.15s,box-shadow 0.15s}
@@ -328,6 +353,12 @@ select.field-input option{background:var(--bg2)}
 /* ── SECTION SPACING FIX ─────────────────────────────────────────────────── */
 .settings-label{font-size:13px;font-weight:600;color:var(--text)}
 .settings-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── REDUCED MOTION ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important}
+  .view.active>*,.view.active .metric,.view.active .grid-2 .card,.view.active .metric-value,.page-title,.page-sub{animation:none !important;transform:none !important;filter:none !important;opacity:1 !important}
+}
 </style>
 </head>
 <body>
