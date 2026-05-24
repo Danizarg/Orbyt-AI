@@ -315,10 +315,19 @@ select.field-input option{background:var(--bg2)}
 .nav-item.active .nav-icon{opacity:1}
 
 /* ── CONNECT BUTTONS — neutral, no glow ─────────────────────────────────── */
-.connect-btn{font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-md);background:rgba(255,255,255,0.03);color:var(--text);cursor:pointer;font-family:var(--font);font-weight:500;transition:background 0.15s ease-out,border-color 0.15s ease-out;white-space:nowrap;flex-shrink:0}
+.connect-btn{font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--border-md);background:rgba(255,255,255,0.03);color:var(--text);cursor:pointer;font-family:var(--font);font-weight:500;transition:background 0.15s ease-out,border-color 0.15s ease-out,color 0.15s ease-out;white-space:nowrap;flex-shrink:0;position:relative;min-width:96px;text-align:center}
 .connect-btn:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.18)}
 .connect-btn.connected{background:transparent;color:var(--green-text);border-color:rgba(16,185,129,0.25)}
-.connect-btn.connected:hover{background:rgba(16,185,129,0.06);border-color:rgba(16,185,129,0.35)}
+/* Hover on a connected button reveals the "Disconnect" affordance */
+.connect-btn.connected:hover{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3);color:transparent}
+.connect-btn.connected::after{content:'Disconnect';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--coral-text);opacity:0;transition:opacity 0.15s ease-out;font-weight:500;font-size:12px;pointer-events:none}
+.connect-btn.connected:hover::after{opacity:1}
+@media (hover: none){
+  /* Touch devices: show a small ✕ next to "Connected" instead of hover swap */
+  .connect-btn.connected{padding-right:30px}
+  .connect-btn.connected::after{content:'✕';opacity:0.7;right:8px;left:auto;width:18px;font-size:11px;color:var(--coral-text)}
+  .connect-btn.connected:hover{background:transparent;border-color:rgba(16,185,129,0.25);color:var(--green-text)}
+}
 
 /* ── CONNECTION ROW ICONS — muted ────────────────────────────────────────── */
 .conn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;letter-spacing:0.02em}
@@ -922,7 +931,7 @@ select.field-input option{background:var(--bg2)}
           <div class="grid-2" style="padding:0 0 16px;">
             <div class="card">
               <div class="card-title">Connection</div>
-              <div class="settings-row"><div><div class="settings-label">WhatsApp number</div><div class="settings-sub">+34 600 000 000</div></div><button class="connect-btn connected">Connected</button></div>
+              <div class="settings-row"><div><div class="settings-label">WhatsApp number</div><div class="settings-sub">+34 600 000 000</div></div><button class="connect-btn connected" onclick="disconnectStub(this,'WhatsApp')">Connected</button></div>
               <div class="settings-row"><div><div class="settings-label">Auto-reply</div><div class="settings-sub">AI replies to all incoming messages</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
               <div class="settings-row"><div><div class="settings-label">Business hours only</div><div class="settings-sub">Only auto-reply during open hours</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
               <div class="settings-row"><div><div class="settings-label">Missed call text-back</div><div class="settings-sub">SMS when a call is missed</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
@@ -1591,8 +1600,95 @@ async function sendReply() {
   } catch(e) { showToast('Send failed. Check your connection.'); }
   finally { if (btn) { btn.disabled=false; btn.textContent='Send reply'; } }
 }
-function connectChannel(btn,name) { btn.textContent='Connecting...'; setTimeout(()=>{ btn.className='connect-btn connected'; btn.textContent='Connected'; showToast(name+' connected!'); },1200); }
+function connectChannel(btn,name) {
+  btn.textContent='Connecting...';
+  setTimeout(()=>{
+    btn.className='connect-btn connected';
+    btn.textContent='Connected';
+    btn.onclick = () => disconnectStub(btn, name);
+    showToast(name+' connected!');
+  },1200);
+}
+function disconnectStub(btn, name) {
+  btn.className = 'connect-btn';
+  btn.textContent = 'Connect';
+  btn.onclick = () => connectChannel(btn, name);
+  showToast(name + ' disconnected');
+}
 function comingSoon(name) { showToast(name + ' — setup wiring up next session. UI is ready.'); }
+
+// ── DISCONNECT (real APIs — Gmail / Outlook / Instagram) ──────────────────
+async function disconnectGmail() {
+  if (!currentUser?.email) return;
+  try {
+    await fetch('/api/channel-status?action=disconnect&provider=gmail&email=' + encodeURIComponent(currentUser.email));
+    setGmailDisconnected();
+    showToast('Gmail disconnected');
+  } catch(e) { showToast('Disconnect failed'); }
+}
+async function disconnectOutlook() {
+  if (!currentUser?.email) return;
+  try {
+    await fetch('/api/channel-status?action=disconnect&provider=outlook&email=' + encodeURIComponent(currentUser.email));
+    setOutlookDisconnected();
+    showToast('Outlook disconnected');
+  } catch(e) { showToast('Disconnect failed'); }
+}
+async function disconnectInstagram() {
+  if (!currentUser?.email) return;
+  try {
+    await fetch('/api/channel-status?action=disconnect&provider=instagram&email=' + encodeURIComponent(currentUser.email));
+    setInstagramDisconnected();
+    showToast('Instagram disconnected');
+  } catch(e) { showToast('Disconnect failed'); }
+}
+
+function setGmailDisconnected() {
+  const label = document.getElementById('gmail-inbox-label');
+  if (label) label.textContent = 'Not connected';
+  ['gmail-connect-btn','gmail-inbox-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.className = 'connect-btn'; btn.textContent = 'Connect'; btn.onclick = () => connectGmail(); }
+  });
+  refreshEmailPill();
+}
+function setOutlookDisconnected() {
+  const label = document.getElementById('outlook-inbox-label');
+  if (label) label.textContent = 'Not connected';
+  ['outlook-connect-btn','outlook-inbox-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.className = 'connect-btn'; btn.textContent = 'Connect'; btn.onclick = () => connectOutlook(); }
+  });
+  refreshEmailPill();
+}
+function setInstagramDisconnected() {
+  const label = document.getElementById('instagram-account-label');
+  if (label) label.textContent = 'Requires a Business or Creator account';
+  ['instagram-connect-btn','instagram-connect-btn-2'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.className = 'connect-btn'; btn.textContent = 'Connect'; btn.onclick = () => connectInstagram(); }
+  });
+  const pill = document.getElementById('instagram-status-pill');
+  if (pill) { pill.className = 'status-pill'; pill.style.cssText = 'background:var(--amber-bg);color:var(--amber-text);'; pill.textContent = 'Not connected'; }
+}
+
+// Email pill reflects whether ANY email provider is still connected
+function refreshEmailPill() {
+  const pill = document.getElementById('email-status-pill');
+  if (!pill) return;
+  const gmailBtn = document.getElementById('gmail-connect-btn') || document.getElementById('gmail-inbox-btn');
+  const outlookBtn = document.getElementById('outlook-connect-btn') || document.getElementById('outlook-inbox-btn');
+  const anyConnected = (gmailBtn?.classList.contains('connected')) || (outlookBtn?.classList.contains('connected'));
+  if (anyConnected) {
+    pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected';
+  } else {
+    pill.className = 'status-pill'; pill.style.cssText = 'background:var(--amber-bg);color:var(--amber-text);'; pill.textContent = 'Not connected';
+    const inboxFeed = document.getElementById('inbox-feed');
+    if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:8px 0;">Connect Gmail or Outlook to see real messages here.</div>';
+    const emailFeed = document.getElementById('email-recent-feed');
+    if (emailFeed) emailFeed.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:8px 0;">No emails yet.</div>';
+  }
+}
 async function loadChannelStatus(email) {
   try {
     const res = await fetch('/api/channel-status?email=' + encodeURIComponent(email));
@@ -1661,7 +1757,7 @@ function setOutlookConnected(inbox) {
   if (label) label.textContent = inbox || 'Connected';
   ['outlook-connect-btn','outlook-inbox-btn'].forEach(id => {
     const btn = document.getElementById(id);
-    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = null; }
+    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = () => disconnectOutlook(); }
   });
   const pill = document.getElementById('email-status-pill');
   if (pill) { pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected'; }
@@ -1675,7 +1771,7 @@ function setInstagramConnected(account) {
   if (label) label.textContent = account ? '@' + account : 'Connected';
   ['instagram-connect-btn','instagram-connect-btn-2'].forEach(id => {
     const btn = document.getElementById(id);
-    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = null; }
+    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = () => disconnectInstagram(); }
   });
   const pill = document.getElementById('instagram-status-pill');
   if (pill) { pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected'; }
@@ -1685,7 +1781,7 @@ function setGmailConnected(inbox) {
   if (label) label.textContent = inbox || 'Connected';
   ['gmail-connect-btn','gmail-inbox-btn'].forEach(id => {
     const btn = document.getElementById(id);
-    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = null; }
+    if (btn) { btn.className = 'connect-btn connected'; btn.textContent = 'Connected'; btn.onclick = () => disconnectGmail(); }
   });
   const pill = document.getElementById('email-status-pill');
   if (pill) { pill.className = 'status-pill active'; pill.style.cssText = ''; pill.textContent = 'Connected'; }
@@ -1732,6 +1828,7 @@ window.openMessage=openMessage; window.copyMsgReply=copyMsgReply; window.regener
 window.sendReply=sendReply; window.connectChannel=connectChannel; window.showToast=showToast;
 window.connectGmail=connectGmail; window.connectOutlook=connectOutlook; window.connectInstagram=connectInstagram; window.openEmailMessage=openEmailMessage; window.setOutlookConnected=setOutlookConnected;
 window.toggleSidebar=toggleSidebar; window.comingSoon=comingSoon;
+window.disconnectGmail=disconnectGmail; window.disconnectOutlook=disconnectOutlook; window.disconnectInstagram=disconnectInstagram; window.disconnectStub=disconnectStub;
 })();
 </script>
 </body>
