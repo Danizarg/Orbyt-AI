@@ -3,7 +3,8 @@
     "allow": [
       "Skill(impeccable)",
       "Bash(node *)",
-      "WebFetch(domain:auwa.life)"
+      "WebFetch(domain:auwa.life)",
+      "PowerShell(git *)"
     ]
   }
 }
