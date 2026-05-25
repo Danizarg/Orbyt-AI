@@ -150,16 +150,84 @@ section{padding:100px 0}
 .section-head--center{text-align:center}
 .section-head--center .section-desc{margin-inline:auto}
 
-/* ── Reveal ───────────────────────────────────────────────────────────── */
-.reveal{opacity:0;transform:translateY(12px);transition:opacity 280ms cubic-bezier(.23,1,.32,1),transform 280ms cubic-bezier(.23,1,.32,1)}
-.reveal.visible{opacity:1;transform:none}
-.reveal:nth-child(2){transition-delay:50ms}
-.reveal:nth-child(3){transition-delay:100ms}
-.reveal:nth-child(4){transition-delay:150ms}
-.reveal:nth-child(5){transition-delay:200ms}
-.reveal:nth-child(6){transition-delay:250ms}
+/* ── Reveal system ────────────────────────────────────────────────────── */
+/* Base: fade up (default for any .reveal) */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity 400ms cubic-bezier(.23,1,.32,1),transform 400ms cubic-bezier(.23,1,.32,1),filter 400ms cubic-bezier(.23,1,.32,1);will-change:transform,opacity}
+.reveal.visible{opacity:1;transform:none;filter:none;will-change:auto}
+
+/* Directional variants */
+.reveal--left{transform:translateX(-24px) translateY(0)}
+.reveal--right{transform:translateX(24px) translateY(0)}
+.reveal--scale{transform:scale(.96) translateY(8px)}
+.reveal--blur{filter:blur(4px)}
+
+/* Hero stagger — elements cascade on page load */
+.hero .reveal:nth-child(1){transition-delay:80ms}
+.hero .reveal:nth-child(2){transition-delay:160ms}
+.hero .reveal:nth-child(3){transition-delay:240ms}
+.hero .reveal:nth-child(4){transition-delay:320ms}
+.hero .reveal:nth-child(5){transition-delay:400ms}
+.hero .reveal:nth-child(6){transition-delay:480ms}
+.hero__device.reveal{transform:translateY(20px) scale(.97);transition-delay:200ms;transition-duration:500ms}
+
+/* Section heads — label, title, desc stagger */
+.section-head .section-label{opacity:0;transform:translateY(8px);transition:opacity 300ms cubic-bezier(.23,1,.32,1) 50ms,transform 300ms cubic-bezier(.23,1,.32,1) 50ms}
+.section-head .section-title{opacity:0;transform:translateY(10px);filter:blur(3px);transition:opacity 350ms cubic-bezier(.23,1,.32,1) 120ms,transform 350ms cubic-bezier(.23,1,.32,1) 120ms,filter 350ms cubic-bezier(.23,1,.32,1) 120ms}
+.section-head .section-desc{opacity:0;transform:translateY(8px);transition:opacity 300ms cubic-bezier(.23,1,.32,1) 200ms,transform 300ms cubic-bezier(.23,1,.32,1) 200ms}
+.section-head.visible .section-label,
+.section-head.visible .section-title,
+.section-head.visible .section-desc{opacity:1;transform:none;filter:none}
+
+/* Feature grid — each cell falls into place from a scattered position */
+.feature{opacity:0;transform:translateY(20px);transition:opacity 350ms cubic-bezier(.23,1,.32,1),transform 350ms cubic-bezier(.23,1,.32,1),background .15s}
+.feature:nth-child(1){transform:translateY(24px) translateX(-8px);transition-delay:60ms}
+.feature:nth-child(2){transform:translateY(28px);transition-delay:120ms}
+.feature:nth-child(3){transform:translateY(24px) translateX(8px);transition-delay:180ms}
+.feature:nth-child(4){transform:translateY(20px) translateX(-8px);transition-delay:240ms}
+.feature:nth-child(5){transform:translateY(24px);transition-delay:300ms}
+.feature:nth-child(6){transform:translateY(20px) translateX(8px);transition-delay:360ms}
+.features-grid.visible .feature{opacity:1;transform:none}
+
+/* Steps — slide in from left with stagger */
+.step{opacity:0;transform:translateX(-20px);transition:opacity 350ms cubic-bezier(.23,1,.32,1),transform 350ms cubic-bezier(.23,1,.32,1)}
+.step:nth-child(1){transition-delay:80ms}
+.step:nth-child(2){transition-delay:180ms}
+.step:nth-child(3){transition-delay:280ms}
+.steps.visible .step{opacity:1;transform:none}
+
+/* Pricing — rise up with stagger */
+.plan{opacity:0;transform:translateY(24px);transition:opacity 350ms cubic-bezier(.23,1,.32,1),transform 350ms cubic-bezier(.23,1,.32,1),border-color .15s}
+.plan:nth-child(1){transition-delay:80ms}
+.plan:nth-child(2){transition-delay:160ms}
+.plan:nth-child(3){transition-delay:240ms}
+.plans.visible .plan{opacity:1;transform:none}
+
+/* Quote — scale up + fade */
+.quote{opacity:0;transform:scale(.97);transition:opacity 450ms cubic-bezier(.23,1,.32,1),transform 450ms cubic-bezier(.23,1,.32,1)}
+.quote.visible{opacity:1;transform:none}
+
+/* FAQ items — cascade */
+.faq__list details{opacity:0;transform:translateY(12px);transition:opacity 300ms cubic-bezier(.23,1,.32,1),transform 300ms cubic-bezier(.23,1,.32,1),border-color .15s}
+.faq__list details:nth-child(1){transition-delay:50ms}
+.faq__list details:nth-child(2){transition-delay:110ms}
+.faq__list details:nth-child(3){transition-delay:170ms}
+.faq__list details:nth-child(4){transition-delay:230ms}
+.faq__list details:nth-child(5){transition-delay:290ms}
+.faq__list.visible details{opacity:1;transform:none}
+
+/* CTA final — blur-fade */
+.cta-final .reveal{filter:blur(4px);transform:translateY(16px)}
+.cta-final .reveal.visible{filter:none;transform:none}
+
+/* Stats — each stat slides up individually */
+.hero__stats > div{opacity:0;transform:translateY(12px);transition:opacity 300ms cubic-bezier(.23,1,.32,1),transform 300ms cubic-bezier(.23,1,.32,1)}
+.hero__stats > div:nth-child(1){transition-delay:500ms}
+.hero__stats > div:nth-child(2){transition-delay:580ms}
+.hero__stats > div:nth-child(3){transition-delay:660ms}
+.hero__stats.visible > div{opacity:1;transform:none}
+
 @media(prefers-reduced-motion:reduce){
-  .reveal{transition:none!important;transform:none!important;opacity:1!important}
+  .reveal,.feature,.step,.plan,.quote,.faq__list details,.section-head .section-label,.section-head .section-title,.section-head .section-desc,.hero__stats > div,.cta-final .reveal{transition:none!important;transform:none!important;filter:none!important;opacity:1!important}
 }
 
 /* ── Features ─────────────────────────────────────────────────────────── */
@@ -287,22 +355,22 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
   <section class="hero">
     <div class="container hero__inner">
       <div>
-        <div class="hero__eyebrow">Private beta</div>
-        <h1 class="hero__title">AI that runs the boring half of your business.</h1>
-        <p class="hero__sub">Bookings, auto-replies, customer comms and analytics, handled by one AI that lives on your phone. Built for shops, salons, studios and service teams.</p>
-        <form class="hero__cta" id="leadForm" novalidate>
+        <div class="hero__eyebrow reveal">Private beta</div>
+        <h1 class="hero__title reveal reveal--blur">AI that runs the boring half of your business.</h1>
+        <p class="hero__sub reveal">Bookings, auto-replies, customer comms and analytics, handled by one AI that lives on your phone. Built for shops, salons, studios and service teams.</p>
+        <form class="hero__cta reveal" id="leadForm" novalidate>
           <label class="sr-only" for="leadEmail">Work email</label>
           <input id="leadEmail" type="email" inputmode="email" autocomplete="email" required placeholder="you@yourbusiness.com" />
           <button type="submit" class="btn btn--primary btn--lg">Get early access <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </form>
-        <p class="hero__hint">No card required. 14-day pilot for first 50 businesses.</p>
-        <div class="hero__stats">
+        <p class="hero__hint reveal">No card required. 14-day pilot for first 50 businesses.</p>
+        <div class="hero__stats reveal">
           <div><div class="hero__stat-value">4.9</div><div class="hero__stat-label">Pilot rating</div></div>
           <div><div class="hero__stat-value">&lt;90s</div><div class="hero__stat-label">Setup time</div></div>
           <div><div class="hero__stat-value">24/7</div><div class="hero__stat-label">AI on call</div></div>
         </div>
       </div>
-      <div class="hero__device" aria-hidden="true">
+      <div class="hero__device reveal" aria-hidden="true">
         <div class="device-wrap">
           <div class="device">
             <div class="device__notch"></div>
@@ -329,38 +397,38 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
   <!-- Features -->
   <section id="features">
     <div class="container">
-      <div class="section-head section-head--center">
+      <div class="section-head section-head--center reveal">
         <div class="section-label">Features</div>
         <h2 class="section-title">One AI. Everything a small business actually needs.</h2>
         <p class="section-desc">No 14-tool Frankenstein stack. ORBYT is the single brain your business runs on.</p>
       </div>
-      <div class="features-grid">
-        <article class="feature reveal">
+      <div class="features-grid reveal">
+        <article class="feature">
           <div class="feature__number">01</div>
           <h3>Smart bookings</h3>
           <p>AI takes appointments via DM, WhatsApp or your site. Checks staff availability, sends reminders, kills no-shows.</p>
         </article>
-        <article class="feature reveal">
+        <article class="feature">
           <div class="feature__number">02</div>
           <h3>Auto-replies</h3>
           <p>Instant, on-brand replies to every message across WhatsApp, Instagram, email, and website chat.</p>
         </article>
-        <article class="feature reveal">
+        <article class="feature">
           <div class="feature__number">03</div>
           <h3>Analytics dashboard</h3>
           <p>See every message, booking and revenue metric in one place. Know what your AI is doing, always.</p>
         </article>
-        <article class="feature reveal">
+        <article class="feature">
           <div class="feature__number">04</div>
           <h3>Follow-up automations</h3>
           <p>Review requests, re-booking nudges, no-show follow-ups. Sent automatically at the right moment.</p>
         </article>
-        <article class="feature reveal">
+        <article class="feature">
           <div class="feature__number">05</div>
           <h3>Multi-channel inbox</h3>
           <p>All your messages in one inbox. Reply, hand off to AI, or draft with AI assistance.</p>
         </article>
-        <article class="feature reveal">
+        <article class="feature">
           <div class="feature__number">06</div>
           <h3>Stripe payments</h3>
           <p>Deposits, full payment, tips. Built on Stripe. Same security as the big players, zero plumbing for you.</p>
@@ -372,23 +440,23 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
   <!-- How it works -->
   <section class="how" id="how">
     <div class="container">
-      <div class="section-head">
+      <div class="section-head reveal">
         <div class="section-label">How it works</div>
         <h2 class="section-title">Live in under 90 seconds.</h2>
         <p class="section-desc">You answer 3 questions on your phone. ORBYT does the rest.</p>
       </div>
-      <ol class="steps">
-        <li class="step reveal">
+      <ol class="steps reveal">
+        <li class="step">
           <div class="step__number">01</div>
           <h3>Tell ORBYT about your business</h3>
           <p>Name, services, hours, staff. Done in a chat. No forms, no setup wizards.</p>
         </li>
-        <li class="step reveal">
+        <li class="step">
           <div class="step__number">02</div>
           <h3>Connect your channels</h3>
           <p>Instagram, WhatsApp, website widget, Google profile. One-tap each.</p>
         </li>
-        <li class="step reveal">
+        <li class="step">
           <div class="step__number">03</div>
           <h3>Go live</h3>
           <p>ORBYT starts answering, booking and following up. You watch it work from the dashboard.</p>
@@ -400,13 +468,13 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
   <!-- Pricing -->
   <section id="pricing">
     <div class="container">
-      <div class="section-head section-head--center">
+      <div class="section-head section-head--center reveal">
         <div class="section-label">Pricing</div>
         <h2 class="section-title">Simple. Pays for itself in a week.</h2>
         <p class="section-desc">14-day pilot. Cancel anytime. No card to start.</p>
       </div>
-      <div class="plans">
-        <article class="plan reveal">
+      <div class="plans reveal">
+        <article class="plan">
           <div class="plan__tier">Base</div>
           <div class="plan__price"><span class="plan__amount">&euro;19.99</span><span class="plan__per"> / month</span></div>
           <ul>
@@ -418,7 +486,7 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
           </ul>
           <button onclick="startCheckout('base')" class="btn btn--ghost btn--block">Get started</button>
         </article>
-        <article class="plan plan--featured reveal">
+        <article class="plan plan--featured">
           <div class="plan__tag">Most popular</div>
           <div class="plan__tier">Pro</div>
           <div class="plan__price"><span class="plan__amount">&euro;39.99</span><span class="plan__per"> / month</span></div>
@@ -431,7 +499,7 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
           </ul>
           <button onclick="startCheckout('pro')" class="btn btn--primary btn--block">Get started</button>
         </article>
-        <article class="plan reveal">
+        <article class="plan">
           <div class="plan__tier">Ultimate</div>
           <div class="plan__price"><span class="plan__amount">&euro;49.99</span><span class="plan__per"> / month</span></div>
           <ul>
@@ -451,7 +519,7 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
   <!-- Testimonial -->
   <section class="testimonial">
     <div class="container">
-      <div class="quote reveal">
+      <div class="quote reveal reveal--scale">
         <p class="quote__text">We were losing 4-5 bookings a day to missed DMs. ORBYT picks them all up, even at 2am from English tourists. It paid for itself in the first weekend.</p>
         <div class="quote__avatar">M</div>
         <div class="quote__name">Marta R.</div>
@@ -463,23 +531,23 @@ details p{padding:0 1.25rem 1rem;font-size:.8125rem;color:var(--text-secondary);
   <!-- FAQ -->
   <section class="faq" id="faq">
     <div class="container">
-      <div class="section-head section-head--center">
+      <div class="section-head section-head--center reveal">
         <div class="section-label">FAQ</div>
         <h2 class="section-title">Questions, answered.</h2>
       </div>
-      <div class="faq__list">
-        <details class="reveal"><summary>Do I need any technical skills?</summary><p>No. If you can use Instagram, you can run ORBYT. Setup is a 60-second chat on your phone.</p></details>
-        <details class="reveal"><summary>What languages does the AI speak?</summary><p>Spanish, English, German, French, Italian, Dutch and Arabic. Auto-detected per customer.</p></details>
-        <details class="reveal"><summary>Can it really replace a receptionist?</summary><p>For most service businesses, yes. For bookings, FAQs, follow-ups and reminders. Anything ORBYT isn't sure about gets handed to you.</p></details>
-        <details class="reveal"><summary>Is my customer data safe?</summary><p>Hosted on Supabase + Vercel in the EU, GDPR-aligned, encrypted at rest and in transit. We never sell data.</p></details>
-        <details class="reveal"><summary>What if I want to cancel?</summary><p>One tap in settings. No call, no email, no friction. You keep your data export.</p></details>
+      <div class="faq__list reveal">
+        <details><summary>Do I need any technical skills?</summary><p>No. If you can use Instagram, you can run ORBYT. Setup is a 60-second chat on your phone.</p></details>
+        <details><summary>What languages does the AI speak?</summary><p>Spanish, English, German, French, Italian, Dutch and Arabic. Auto-detected per customer.</p></details>
+        <details><summary>Can it really replace a receptionist?</summary><p>For most service businesses, yes. For bookings, FAQs, follow-ups and reminders. Anything ORBYT isn't sure about gets handed to you.</p></details>
+        <details><summary>Is my customer data safe?</summary><p>Hosted on Supabase + Vercel in the EU, GDPR-aligned, encrypted at rest and in transit. We never sell data.</p></details>
+        <details><summary>What if I want to cancel?</summary><p>One tap in settings. No call, no email, no friction. You keep your data export.</p></details>
       </div>
     </div>
   </section>
 
   <!-- Final CTA -->
   <section class="cta-final">
-    <div class="container reveal">
+    <div class="container reveal reveal--blur">
       <h2>Let ORBYT handle the boring half.</h2>
       <p>So you can spend your time on the part of the business you actually love.</p>
       <a href="#pricing" class="btn btn--primary btn--lg">Start your free pilot <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
@@ -541,8 +609,8 @@ toggle.addEventListener('click', () => {
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal,.features-grid,.steps,.plans,.faq__list,.quote,.section-head,.hero__stats').forEach(el => observer.observe(el));
 
 function toggleTheme() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';

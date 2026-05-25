@@ -1,0 +1,31 @@
+claude commands:
+save to plan.md
+
+Please save this information into PLAN.md.
+
+Update the existing PLAN.md file only. Do not create a new file.
+
+Add the information to the correct section, such as:
+
+* Important Decisions and Solutions
+* Checklist
+* Next Actions to Implement
+* Progress Percentage
+* Backup Reminder
+
+Keep it structured, concise, and useful for future sessions. At the end, confirm what you added and where you saved it.
+
+
+
+
+
+APIS:
+NIM AI NVIDIA
+
+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
+
+
+
+SKILLS:
+emilkowalski 
+	npx skills add emilkowalsk/skill
