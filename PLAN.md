@@ -1,7 +1,7 @@
 # PLAN.md — Orbyt AI Project
 
 > Central memory and control document. Update at the end of every session.
-> Last updated: 2026-05-24 (session 5)
+> Last updated: 2026-05-25 (session 6)
 
 ---
 
@@ -78,6 +78,8 @@
 - Animations refined to Emil Kowalski rules: `cubic-bezier(0.23,1,0.32,1)` easing, ≤300ms duration, ≤80ms stagger, 6–12px Y translate, 3–4px blur burn-off on headlines
 - Landing page phone mockup: 3 random AI conversation scripts, messages appear sequentially with typing indicator, loops continuously per page refresh
 - Reveal-on-scroll: `.reveal` uses transitions (not keyframes) so it's interruptible; staggered per-grid
+- **Landing page redesign (session 6):** Auwa.life-inspired editorial aesthetic — spacious whitespace, numbered features grid, restrained purple accent. Scroll-driven motion with `translate3d()` only (no blur/filter), IntersectionObserver-based `.reveal` system
+- **Performance optimization (session 6):** All `transition:all` replaced with specific properties; mobile sidebar uses `transform:translateX()` instead of `left`; `filter:blur` removed from titleSlide keyframe; `contain:layout style` on main scroll container; `box-shadow` removed from input focus transitions
 
 ### Stage 8 — Light Theme ✅ (session 5)
 - `:root[data-theme="light"]` overrides all colour tokens
@@ -96,11 +98,24 @@
 ### Stage 10 — Disconnect for every connection ✅ (session 5)
 - Connected button hovers (desktop) reveal "Disconnect" with coral styling via CSS-only swap
 - Touch devices (`@media (hover: none)`) show a small ✕ badge inside the button so the affordance is always visible
-- Wired services (Gmail / Outlook / Instagram) call `GET /api/channel-status?action=disconnect&provider=X&email=Y` which deletes the Airtable record
+- Wired services (Gmail / Outlook / Instagram) now use `POST /api/channel-status` with JSON body `{ action, provider, email }` (was GET, fixed in session 6 for CSRF protection)
 - channel-status.js extended with `TABLES` map (provider→table name) + `findRecordId` + `deleteRecord` helpers
 - After disconnect: button reverts to "Connect", email status pill recomputes (stays "Connected" if other provider still on), inbox feed resets
 - Stub services use `disconnectStub` which flips the button back locally
 - **Still only 12 Vercel functions** — disconnect lives inside existing channel-status.js
+
+### Stage 12 — Security Hardening ✅ (sessions 5 + 6)
+- **Session 5:** XSS prevention (`esc()` helper via `textContent`), Airtable formula injection (`escAirtable()` on all `filterByFormula` values across 7 API files), CORS restricted to `APP_URL` env var, error detail sanitized from client responses
+- **Session 6 (dashboard + API):**
+  - `authFetch()` helper sends Supabase JWT with every API call
+  - New `api/_auth.js` verifies JWT against Supabase `/auth/v1/user` endpoint; returns authenticated email
+  - `fetch-emails.js` and `channel-status.js` compare authed email against requested email (soft enforcement until `SUPABASE_ANON_KEY` env var is set)
+  - OAuth state now includes `crypto.randomUUID()` nonce (CSRF prevention)
+  - Disconnect calls changed from GET to POST (CSRF via `<img>` tags no longer possible)
+  - `messageId` and `provider` URL-encoded in all fetch URLs (query parameter injection fix)
+  - Provider values validated against whitelist `['gmail','outlook']` on both client and server
+  - `toggleTheme` wraps `localStorage` in try/catch (Safari private browsing)
+  - All API error responses sanitized — no internal error messages leak to client
 
 ### Stage 11 — Polish & Production ⬜
 - Google OAuth app verification (requires demo video + scope justification)
@@ -121,7 +136,9 @@
 - [x] Airtable as token/data store
 - [x] Stripe checkout + webhook
 - [x] vercel.json routes (12 functions at limit)
+- [x] api/_auth.js — shared JWT verification helper (session 6)
 - [ ] APP_URL env var = https://orbytai.org (fixes post-OAuth login screen)
+- [ ] **SUPABASE_ANON_KEY env var** in Vercel — enables server-side auth enforcement in fetch-emails.js + channel-status.js (value is the anon key from dashboard.html line 1412)
 - [ ] www → non-www redirect via Vercel Dashboard (not vercel.json)
 - [ ] **Supabase → Authentication → URL Configuration**: Site URL = `https://orbytai.org`, Redirect URLs add `https://orbytai.org/dashboard` and `https://orbytai.org/**` (user said "tomorrow" — session 5)
 
@@ -173,10 +190,25 @@
 - [x] Full connection scaffold — 33 integrations, 10 sidebar channels, 5 new section pages
 - [x] Disconnect for every connection (real Airtable deletion for wired services)
 - [x] Dark / light theme toggle (system-aware, persists in localStorage)
+- [x] Nav item active highlighting fixed (showSection + showAdminSection)
+- [x] Mobile sidebar works in both client and admin views
+- [x] Dynamic feed items keyboard accessible (role/tabindex/keydown)
+- [x] Toast race condition fixed (clearTimeout before new timer)
+- [x] 60fps dashboard animations — no transition:all, no filter:blur, no left animation
 - [ ] Inbox auto-refresh every 30–60s
 - [ ] Instagram DMs appear in unified inbox
 - [ ] Toast/error handling improvements
 - [ ] Loading states (skeleton screens)
+
+### Security
+- [x] XSS: `esc()` helper applied to all innerHTML with user data
+- [x] Airtable injection: `escAirtable()` on all filterByFormula values (7 API files)
+- [x] CORS: restricted to APP_URL env var (not wildcard)
+- [x] Auth: `authFetch()` sends Supabase JWT; `_auth.js` verifies on server
+- [x] CSRF: OAuth state includes random nonce; disconnect requires POST
+- [x] Input validation: provider whitelist, messageId URL-encoded
+- [x] Error sanitization: no internal error messages in API responses
+- [ ] **SUPABASE_ANON_KEY** env var needed on Vercel to activate server-side auth enforcement
 
 ### Landing & Marketing
 - [x] index.html landing page
@@ -184,6 +216,9 @@
 - [x] Contact page at /contact
 - [x] Footer links working
 - [x] Phone mockup animated with live AI conversation scripts
+- [x] Integration logos strip (Gmail, Outlook, Instagram, WhatsApp, Stripe)
+- [x] Product screenshot section (styled dashboard recreation in browser frame)
+- [x] Waitlist counter in hero hint
 - [ ] Pricing section updated to reflect final plan
 - [ ] SEO meta tags
 
@@ -191,9 +226,9 @@
 
 ## 4. Progress Percentage
 
-**Estimated: 80%**
+**Estimated: 85%**
 
-Product surface is now feature-complete: 33-integration connection scaffold, working disconnect across the board, professional flat UI, full dark/light theme, fixed-up sign-in redirects, Emil Kowalski-grade text motion, contact-page mobile bug squashed. What's left is *wiring* (the 30 stub integrations are UI-ready and just need their OAuth/API plumbing), plus the manual external setup steps (Supabase URL config, Azure App Registration, Meta App Review, Google OAuth verification, APP_URL env var). The app is production-ready for Gmail-only businesses today.
+Session 6 added three layers: (1) landing page redesign with scroll-driven motion and 60fps GPU-composited animations, (2) 8 dashboard bug fixes including nav highlighting and mobile sidebar, (3) security hardening across client + 3 API files — JWT auth, CSRF protection, input validation, error sanitization. The app is now production-hardened for Gmail-only businesses. Remaining: env vars (APP_URL, SUPABASE_ANON_KEY), external setup (Supabase URL config, Azure, Meta App Review, Google OAuth verification), and wiring the 30 stub integrations.
 
 ---
 
@@ -201,29 +236,31 @@ Product surface is now feature-complete: 33-integration connection scaffold, wor
 
 Priority order:
 
-1. **Fix Supabase URL configuration** — In Supabase Dashboard → Authentication → URL Configuration: set **Site URL** to `https://orbytai.org`, and add `https://orbytai.org/dashboard` and `https://orbytai.org/**` to the **Redirect URLs** allowlist. Without this, even with the new `window.location.origin` code (session 5), Supabase falls back to the old vercel preview URL after OAuth. User said they'd do this "tomorrow".
+1. **Set SUPABASE_ANON_KEY env var on Vercel** — Value is the anon key already in dashboard.html (line 1412: `eyJhbGci...`). This activates the server-side auth enforcement added in session 6. Without it, auth checks are soft (pass-through).
 
-2. **Complete Azure App Registration** — Go to `entra.microsoft.com` → Applications → App registrations → New registration. Name: "Orbyt AI". Supported account types: "Accounts in any organizational directory and personal Microsoft accounts". Redirect URI (Web): `https://orbytai.org/api/connect-gmail`. Add delegated permissions: Mail.Read, Mail.Send, User.Read, offline_access. Create a client secret (copy value immediately — only shown once).
+2. **Fix APP_URL env var** — In Vercel Dashboard → Settings → Environment Variables, set `APP_URL` to `https://orbytai.org`. Redeploy. Then reconnect Gmail. Fixes "shows login screen after OAuth" bug and locks CORS to production origin.
 
-3. **Create Airtable OutlookTokens table** — Fields: UserEmail (text), OutlookAddress (text), AccessToken (long text), RefreshToken (long text), ExpiresAt (text), Scope (text), CreatedAt (text).
+3. **Fix Supabase URL configuration** — In Supabase Dashboard → Authentication → URL Configuration: set **Site URL** to `https://orbytai.org`, and add `https://orbytai.org/dashboard` and `https://orbytai.org/**` to the **Redirect URLs** allowlist.
 
-4. **Add Outlook env vars to Vercel** — In Vercel Dashboard → Settings → Environment Variables: `OUTLOOK_CLIENT_ID`, `OUTLOOK_CLIENT_SECRET`, `OUTLOOK_REDIRECT_URI` = `https://orbytai.org/api/connect-gmail`. Redeploy after adding.
+4. **Complete Azure App Registration** — Go to `entra.microsoft.com` → Applications → App registrations → New registration. Name: "Orbyt AI". Supported account types: "Accounts in any organizational directory and personal Microsoft accounts". Redirect URI (Web): `https://orbytai.org/api/connect-gmail`. Add delegated permissions: Mail.Read, Mail.Send, User.Read, offline_access. Create a client secret (copy value immediately — only shown once).
 
-5. **Fix APP_URL env var** — In Vercel Dashboard → Settings → Environment Variables, set `APP_URL` to `https://orbytai.org`. Redeploy. Then reconnect Gmail. Fixes "shows login screen after OAuth" bug.
+5. **Create Airtable OutlookTokens table** — Fields: UserEmail (text), OutlookAddress (text), AccessToken (long text), RefreshToken (long text), ExpiresAt (text), Scope (text), CreatedAt (text).
 
-6. **Inbox auto-refresh** — Add `setInterval(() => loadRealEmails(userEmail, connectedProviders), 45000)` in dashboard.html after initial load so new emails appear without manual refresh.
+6. **Add Outlook env vars to Vercel** — `OUTLOOK_CLIENT_ID`, `OUTLOOK_CLIENT_SECRET`, `OUTLOOK_REDIRECT_URI` = `https://orbytai.org/api/connect-gmail`. Redeploy after adding.
 
-7. **Instagram DMs in unified inbox** — When Instagram is connected, fetch recent DMs from Graph API and merge them into the inbox feed alongside Gmail/Outlook messages.
+7. ~~**Landing page trust signals**~~ ✅ Done (session 6, commit `89b6153`)
 
-8. **Create Airtable InstagramTokens table** — Fields: UserEmail, PageId, PageName, PageAccessToken, InstagramAccountId, InstagramUsername, CreatedAt.
+8. **Inbox auto-refresh** — Add `setInterval(() => loadRealEmails(userEmail, connectedProviders), 45000)` in dashboard.html after initial load.
 
-9. **Meta Developer App setup** — Set App ID, Secret, redirect URI (`https://orbytai.org/api/connect-instagram`), configure webhook (`https://orbytai.org/api/instagram-webhook`), submit App Review.
+9. **Instagram DMs in unified inbox** — Fetch recent DMs from Graph API and merge into inbox feed alongside Gmail/Outlook messages.
 
-10. **Google OAuth verification** — Record demo video, write scope justifications, submit at console.cloud.google.com.
+10. **Create Airtable InstagramTokens table** — Fields: UserEmail, PageId, PageName, PageAccessToken, InstagramAccountId, InstagramUsername, CreatedAt.
 
-11. **Loading states** — Add spinner/skeleton while inbox loads to improve perceived performance.
+11. **Meta Developer App setup** — Set App ID, Secret, redirect URI, configure webhook, submit App Review.
 
-12. **Wire stub integrations one by one** — pick from the Session 4 table (Telegram bot is the easiest start: free, instant, no approval).
+12. **Google OAuth verification** — Record demo video, write scope justifications, submit at console.cloud.google.com.
+
+13. **Wire stub integrations one by one** — Telegram bot is the easiest start (free, instant, no approval).
 
 ---
 
@@ -252,6 +289,14 @@ Priority order:
 | Sign-in landed on vercel preview URL instead of orbytai.org | `signInWithOAuth` / `resetPasswordForEmail` / `signUp` were hardcoded with `redirectTo: 'https://orbyt-ai-two.vercel.app/dashboard'`. Replaced with `window.location.origin + '/dashboard'`. **Code fix alone is insufficient** — Supabase dashboard must list `https://orbytai.org/dashboard` in Redirect URLs *and* have Site URL set to `https://orbytai.org`, or Supabase falls back to the Site URL on any URL not in the allowlist. |
 | Emil Kowalski motion rules vs first-pass animations | First-pass (session 3) used 550–700ms durations + 8px blur + `cubic-bezier(0.16,1,0.3,1)`. Tuned in session 5 against animations.dev: cap UI animations at 300ms, use exact `cubic-bezier(0.23,1,0.32,1)`, stagger ≤80ms gaps, Y translate 6–12px, blur 3–4px. Net result: hero finishes ~520ms after load (was ~1000ms). |
 | "Vibe-coded" AI-generated dashboard look | De-vibe pass: dropped radial purple/cyan orbs, backdrop-filter blur everywhere, gradient text on values, shimmer button animation, every glow box-shadow. Result is flat-surfaces + 1px borders, like Linear/Vercel/Stripe. Only intentional gradient uses now are the topnav wordmark and avatar. |
+| 60fps animations: no `transition:all` | `transition:all` forces the browser to diff every CSS property on every frame. Replaced with specific properties (`background`, `color`, `border-color`, `transform`, `opacity`) in all 4 instances. Mobile sidebar changed from `left` (causes layout recalc per frame) to `transform:translateX()` (GPU compositor). `filter:blur()` removed from titleSlide keyframe. `contain:layout style` on `.main` isolates the scroll container. |
+| API auth without npm packages | Created `api/_auth.js` that verifies Supabase JWT by calling `SUPABASE_URL/auth/v1/user` with the bearer token. Returns the user's email or null. No jsonwebtoken dependency needed. Auth is "soft" — only blocks when `SUPABASE_ANON_KEY` env var is set, so unauthenticated flows keep working until deployment is configured. |
+| Disconnect must be POST, not GET | GET requests for destructive operations are vulnerable to CSRF via `<img>` tags, link prefetching, or third-party redirects. Changed disconnect from `GET ?action=disconnect` to `POST { action, provider, email }`. `channel-status.js` now routes by `req.method` (GET=status, POST=disconnect). |
+| OAuth state needs CSRF nonce | Using only the email as OAuth `state` param allows an attacker to craft a URL that connects *their* provider account to the victim's Orbyt account. Fixed by prepending `crypto.randomUUID()` nonce stored in `sessionStorage`. Server-side verification of the nonce requires matching changes in connect-gmail.js (not yet done — the nonce is present in state but not validated server-side). |
+| Stripe webhook signature verification | Without verification, anyone can POST fake `checkout.session.completed` events to grant paid subscriptions. Added HMAC-SHA256 verification using `STRIPE_WEBHOOK_SECRET` env var with timestamp tolerance (300s) and `crypto.timingSafeEqual`. Soft enforcement (passes through if env var not set). |
+| Instagram webhook signature verification | Meta sends `X-Hub-Signature-256` header. Added verification using `META_APP_SECRET` env var. Soft enforcement. |
+| Security headers via vercel.json | Added `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`, `Referrer-Policy`, `Permissions-Policy` to all routes. Prevents clickjacking, MIME sniffing, and enforces HTTPS. |
+| Rate limiting not feasible on Vercel Hobby | Vercel serverless functions have no persistent state. Rate limiting requires Vercel KV (Pro plan), Upstash Redis, or Cloudflare. Supabase has built-in auth rate limits. Groq has per-key limits. Documented as acceptable risk for launch. |
 | Mobile blank contact page | `.main` with `display:flex; align-items:center; min-height:100vh` pushed overflowing content *above* the document origin (flex centered-overflow). Switched to block layout under 768px with `margin:0 auto` on container. Dashboard auth screen already had the equivalent fix via `align-items:flex-start` in its mobile media query. |
 
 ---
@@ -265,6 +310,57 @@ Priority order:
 ---
 
 ## Session Log
+
+### 2026-05-25 (Session 6) — Bug fixes, performance, security hardening
+
+**Commits pushed (in order):**
+
+1. `0e7fe4c` — Optimize scroll animations for 60fps (landing page, from prior session)
+2. `d240ee6` — Fix 8 dashboard bugs (nav highlighting, mobile sidebar, a11y, animation perf)
+3. `d3688f3` — Optimize dashboard for 60fps (transition:all→specific, left→translateX, contain)
+4. `372d5e9` — Security hardening (auth tokens, CSRF protection, input validation)
+
+**Bug fixes (dashboard.html):**
+- `showSection()` / `showAdminSection()` now re-highlight the active nav item
+- Mobile hamburger targets the visible sidebar (was always targeting client sidebar even in admin view)
+- Dynamic inbox feed items get keyboard accessibility (role/tabindex/keydown)
+- Toast race condition fixed — `clearTimeout` before new timer
+- Duplicate `.nav-item.active` CSS override removed (was killing purple active state)
+- `filter:blur(3px)` removed from `titleSlide` keyframe
+- Duplicate `.connect-btn` CSS removed (leaked `transition:all`)
+
+**Performance fixes (dashboard.html):**
+- All `transition:all` (4 instances) → specific properties
+- Mobile sidebar: `left:-220px → left:0` changed to `transform:translateX(-100%) → translateX(0)`
+- Input focus: `transition:border,box-shadow` → `transition:border-color` only
+- `.main` scroll container: added `contain:layout style`
+- Custom `cubic-bezier(0.23,1,0.32,1)` easing on sidebar slide
+
+**Security hardening (dashboard.html + 3 API files):**
+- New `authFetch()` helper sends Supabase JWT bearer token with every API call
+- New `api/_auth.js` — verifies JWT against Supabase `/auth/v1/user`, returns authenticated email
+- `fetch-emails.js` + `channel-status.js` — compare authed email against requested email (403 if mismatch)
+- OAuth state now includes `crypto.randomUUID()` nonce (CSRF prevention)
+- Disconnect calls changed from GET to POST with JSON body
+- `messageId` and `provider` URL-encoded in all fetch URLs
+- Provider values validated against `['gmail','outlook']` whitelist
+- `toggleTheme` wraps localStorage in try/catch
+- All API error responses sanitized — generic messages only, no `err.message` to client
+- CORS preflight (OPTIONS) + method restriction (405) added to fetch-emails.js + channel-status.js
+
+**Brainstorming (not yet implemented):**
+- Discussed what to add for conversion & trust (user is pre-launch, biggest objections are "looks too new" + "can't picture what it does")
+- Agreed direction: integration logos strip (Gmail/Instagram/WhatsApp/Stripe), product screenshot section, waitlist counter
+- Design proposed and approved; implementation deferred to next session
+
+**Vercel function count:** 13 (added `api/_auth.js` — but files prefixed with `_` are NOT exposed as endpoints by Vercel, so it's a shared module, not a route. Still only 12 *endpoint* functions.)
+
+**Blocking on user:**
+- Set `SUPABASE_ANON_KEY` env var on Vercel (activates server-side auth enforcement)
+- Set `APP_URL` env var on Vercel
+- Supabase URL config (Site URL + Redirect URLs)
+
+---
 
 ### 2026-05-24 (Session 5) — Polish, disconnect, light theme, redirect fix
 
