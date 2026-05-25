@@ -3,7 +3,18 @@
 // GET: verifies the webhook with Meta (one-time setup).
 // POST: receives incoming DMs, generates AI reply via Groq, sends it back.
 
+const crypto = require('crypto');
 const GRAPH = 'https://graph.facebook.com/v18.0';
+
+function verifyMetaSignature(req) {
+  const sig = req.headers['x-hub-signature-256'];
+  const secret = process.env.META_APP_SECRET;
+  if (!secret) return true;
+  if (!sig) return false;
+  const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  try { return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig)); } catch { return false; }
+}
 
 module.exports = async function handler(req, res) {
   // GET — Meta webhook verification challenge
@@ -18,6 +29,11 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== 'POST') return res.status(405).end();
+
+  if (!verifyMetaSignature(req)) {
+    console.error('Instagram webhook: invalid signature');
+    return res.status(403).json({ error: 'Invalid signature' });
+  }
 
   try {
     const body = req.body;

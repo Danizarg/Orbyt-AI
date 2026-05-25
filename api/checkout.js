@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) return res.status(500).json({ error: 'Stripe not configured' });
 
-  const baseUrl = process.env.APP_URL || 'https://orbyt-ai-two.vercel.app';
+  const baseUrl = process.env.APP_URL || 'https://orbytai.org';
 
   try {
     const params = new URLSearchParams({
