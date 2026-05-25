@@ -7,8 +7,17 @@
 // GET  ?action=body  — full body of a single message by ID
 // POST              — send a reply
 
+const { verifyAuth } = require('./_auth');
+const VALID_PROVIDERS = ['gmail', 'outlook'];
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL || 'https://orbytai.org');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const authedEmail = await verifyAuth(req);
 
   const { email, action, messageId, provider = 'gmail' } = req.query;
 
@@ -16,8 +25,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'POST') {
     const { email: bodyEmail, to, subject, body, threadId, provider: bodyProvider } = req.body || {};
     const senderEmail = bodyEmail;
-    const prov = bodyProvider || 'gmail';
+    const prov = VALID_PROVIDERS.includes(bodyProvider) ? bodyProvider : 'gmail';
     if (!senderEmail || !to || !body) return res.status(400).json({ error: 'email, to, body required' });
+    if (authedEmail && authedEmail !== senderEmail) return res.status(403).json({ error: 'Forbidden' });
 
     try {
       if (prov === 'outlook') {
@@ -66,14 +76,17 @@ module.exports = async function handler(req, res) {
       if (result.error) throw new Error(result.error.message);
       return res.json({ ok: true, id: result.id });
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+      console.error('send error:', err.message);
+      return res.status(500).json({ error: 'Failed to send message' });
     }
   }
 
   if (!email) return res.status(400).json({ error: 'email required' });
+  if (authedEmail && authedEmail !== email) return res.status(403).json({ error: 'Forbidden' });
+  const safeProvider = VALID_PROVIDERS.includes(provider) ? provider : 'gmail';
 
   // ── OUTLOOK ───────────────────────────────────────────────────────────────
-  if (provider === 'outlook') {
+  if (safeProvider === 'outlook') {
     const tokenRecord = await getOutlookTokens(email);
     if (!tokenRecord) return res.json(action === 'body' ? { error: 'Not connected' } : { emails: [] });
 
@@ -134,7 +147,7 @@ module.exports = async function handler(req, res) {
       return res.json({ emails });
     } catch (err) {
       console.error('fetch-emails outlook error:', err.message);
-      return res.json(action === 'body' ? { error: err.message } : { emails: [] });
+      return res.json(action === 'body' ? { error: 'Failed to load message' } : { emails: [] });
     }
   }
 
@@ -204,7 +217,7 @@ module.exports = async function handler(req, res) {
     return res.json({ emails: emails.filter(Boolean) });
   } catch (err) {
     console.error('fetch-emails gmail error:', err.message);
-    return res.json(action === 'body' ? { error: err.message } : { emails: [] });
+    return res.json(action === 'body' ? { error: 'Failed to load message' } : { emails: [] });
   }
 };
 

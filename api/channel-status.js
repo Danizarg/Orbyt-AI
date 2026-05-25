@@ -1,6 +1,8 @@
 // api/channel-status.js
-// GET ?email=...                                  — which channels are connected
-// GET ?action=disconnect&provider=X&email=...     — delete tokens for that provider
+// GET  ?email=...                                 — which channels are connected
+// POST { action:'disconnect', provider, email }   — delete tokens for that provider
+
+const { verifyAuth } = require('./_auth');
 
 const TABLES = {
   gmail: 'GmailTokens',
@@ -12,11 +14,18 @@ function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL || 'https://orbytai.org');
-  const { email, action, provider } = req.query;
-  if (!email) return res.status(400).json({ error: 'email required' });
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Disconnect: delete the Airtable record for this user + provider
-  if (action === 'disconnect') {
+  const authedEmail = await verifyAuth(req);
+
+  // Disconnect: POST only (CSRF protection)
+  if (req.method === 'POST') {
+    const { action, provider, email } = req.body || {};
+    if (action !== 'disconnect') return res.status(400).json({ error: 'invalid action' });
+    if (!email) return res.status(400).json({ error: 'email required' });
+    if (authedEmail && authedEmail !== email) return res.status(403).json({ error: 'Forbidden' });
     const table = TABLES[provider];
     if (!table) return res.status(400).json({ error: 'unknown provider' });
     try {
@@ -25,9 +34,15 @@ module.exports = async function handler(req, res) {
       return res.json({ ok: true });
     } catch (err) {
       console.error('disconnect error:', err.message);
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: 'Disconnect failed' });
     }
   }
+
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  if (authedEmail && authedEmail !== email) return res.status(403).json({ error: 'Forbidden' });
 
   const [gmail, outlook, instagram] = await Promise.all([
     checkGmail(email),

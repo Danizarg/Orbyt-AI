@@ -1412,7 +1412,16 @@ const orbytAuth = _sb(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bGZjcG9kd2d3cHFjcHdvZHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0ODAzNjMsImV4cCI6MjA5MzA1NjM2M30.NvMAXqO7XodqSB5c4iZNRnZGIzhc7qKzD6RDoUpQ0Tg'
 );
 const ADMIN_EMAILS = ['danizarg@gmail.com'];
+const VALID_PROVIDERS = ['gmail', 'outlook'];
 let currentUser = null, currentMsgText = '', currentMsgChannel = '', currentMsgTo = '', currentMsgSubject = '', currentMsgThreadId = '', currentMsgProvider = 'gmail';
+
+async function authFetch(url, opts = {}) {
+  const { data: { session } } = await orbytAuth.auth.getSession();
+  const headers = Object.assign({}, opts.headers || {});
+  if (session?.access_token) headers['Authorization'] = 'Bearer ' + session.access_token;
+  return fetch(url, Object.assign({}, opts, { headers: headers }));
+}
+function safeProvider(p) { return VALID_PROVIDERS.includes(p) ? p : 'gmail'; }
 
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
@@ -1591,7 +1600,7 @@ function buildPrompt(msg,context,channel) {
 }
 
 async function callAI(prompt) {
-  const res = await fetch('/api/draft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+  const res = await authFetch('/api/draft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
   if (!res.ok) throw new Error('API error');
   return (await res.json()).reply;
 }
@@ -1628,8 +1637,8 @@ async function openEmailMessage(name, subject, messageId, fromAddress, threadId,
   const spinner = document.getElementById('msg-spinner');
   spinner.classList.add('visible');
   try {
-    const prov = provider || 'gmail';
-    const res = await fetch('/api/fetch-emails?action=body&provider=' + prov + '&email=' + encodeURIComponent(currentUser.email) + '&messageId=' + messageId);
+    const prov = safeProvider(provider);
+    const res = await authFetch('/api/fetch-emails?action=body&provider=' + encodeURIComponent(prov) + '&email=' + encodeURIComponent(currentUser.email) + '&messageId=' + encodeURIComponent(messageId));
     const data = await res.json();
     const body = data.body || subject;
     currentMsgText = body;
@@ -1660,10 +1669,10 @@ async function sendReply() {
   const btn = document.querySelector('#msg-detail .btn.primary');
   if (btn) { btn.disabled=true; btn.textContent='Sending...'; }
   try {
-    const res = await fetch('/api/fetch-emails', {
+    const res = await authFetch('/api/fetch-emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentUser.email, to: currentMsgTo, subject: currentMsgSubject, body: replyText, threadId: currentMsgThreadId, provider: currentMsgProvider }),
+      body: JSON.stringify({ email: currentUser.email, to: currentMsgTo, subject: currentMsgSubject, body: replyText, threadId: currentMsgThreadId, provider: safeProvider(currentMsgProvider) }),
     });
     const data = await res.json();
     if (data.ok) { showToast('Reply sent!'); document.getElementById('msg-detail').style.display='none'; }
@@ -1690,15 +1699,15 @@ function comingSoon(name) { showToast(name + ' — setup wiring up next session.
 
 function toggleTheme() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  if (isLight) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('orbyt-theme', 'dark'); }
-  else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('orbyt-theme', 'light'); }
+  if (isLight) { document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('orbyt-theme', 'dark'); } catch(e) {} }
+  else { document.documentElement.setAttribute('data-theme', 'light'); try { localStorage.setItem('orbyt-theme', 'light'); } catch(e) {} }
 }
 
 // ── DISCONNECT (real APIs — Gmail / Outlook / Instagram) ──────────────────
 async function disconnectGmail() {
   if (!currentUser?.email) return;
   try {
-    await fetch('/api/channel-status?action=disconnect&provider=gmail&email=' + encodeURIComponent(currentUser.email));
+    await authFetch('/api/channel-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect', provider: 'gmail', email: currentUser.email }) });
     setGmailDisconnected();
     showToast('Gmail disconnected');
   } catch(e) { showToast('Disconnect failed'); }
@@ -1706,7 +1715,7 @@ async function disconnectGmail() {
 async function disconnectOutlook() {
   if (!currentUser?.email) return;
   try {
-    await fetch('/api/channel-status?action=disconnect&provider=outlook&email=' + encodeURIComponent(currentUser.email));
+    await authFetch('/api/channel-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect', provider: 'outlook', email: currentUser.email }) });
     setOutlookDisconnected();
     showToast('Outlook disconnected');
   } catch(e) { showToast('Disconnect failed'); }
@@ -1714,7 +1723,7 @@ async function disconnectOutlook() {
 async function disconnectInstagram() {
   if (!currentUser?.email) return;
   try {
-    await fetch('/api/channel-status?action=disconnect&provider=instagram&email=' + encodeURIComponent(currentUser.email));
+    await authFetch('/api/channel-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect', provider: 'instagram', email: currentUser.email }) });
     setInstagramDisconnected();
     showToast('Instagram disconnected');
   } catch(e) { showToast('Disconnect failed'); }
@@ -1768,7 +1777,7 @@ function refreshEmailPill() {
 }
 async function loadChannelStatus(email) {
   try {
-    const res = await fetch('/api/channel-status?email=' + encodeURIComponent(email));
+    const res = await authFetch('/api/channel-status?email=' + encodeURIComponent(email));
     const data = await res.json();
     const providers = [];
     if (data.gmail?.connected) { setGmailConnected(data.gmail.inbox); providers.push('gmail'); }
@@ -1786,7 +1795,7 @@ async function loadRealEmails(userEmail, providers) {
     const providerList = providers || ['gmail'];
     const results = await Promise.all(
       providerList.map(p =>
-        fetch('/api/fetch-emails?email=' + encodeURIComponent(userEmail) + '&provider=' + p)
+        authFetch('/api/fetch-emails?email=' + encodeURIComponent(userEmail) + '&provider=' + encodeURIComponent(safeProvider(p)))
           .then(r => r.json())
           .then(d => d.emails || [])
           .catch(() => [])
@@ -1825,13 +1834,18 @@ async function loadRealEmails(userEmail, providers) {
     if (inboxFeed) inboxFeed.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:8px 0;">Could not load emails.</div>';
   }
 }
+function makeOAuthState(email) {
+  const nonce = crypto.randomUUID();
+  try { sessionStorage.setItem('oauth_nonce', nonce); } catch(e) {}
+  return nonce + ':' + email;
+}
 function connectGmail() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
-  window.location.href = '/api/connect-gmail?action=auth&state=' + encodeURIComponent(currentUser.email);
+  window.location.href = '/api/connect-gmail?action=auth&state=' + encodeURIComponent(makeOAuthState(currentUser.email));
 }
 function connectOutlook() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
-  window.location.href = '/api/connect-gmail?action=auth&provider=outlook&state=' + encodeURIComponent(currentUser.email);
+  window.location.href = '/api/connect-gmail?action=auth&provider=outlook&state=' + encodeURIComponent(makeOAuthState(currentUser.email));
 }
 function setOutlookConnected(inbox) {
   const label = document.getElementById('outlook-inbox-label');
@@ -1845,7 +1859,7 @@ function setOutlookConnected(inbox) {
 }
 function connectInstagram() {
   if (!currentUser?.email) { showToast('Please sign in first'); return; }
-  window.location.href = '/api/connect-instagram?action=auth&state=' + encodeURIComponent(currentUser.email);
+  window.location.href = '/api/connect-instagram?action=auth&state=' + encodeURIComponent(makeOAuthState(currentUser.email));
 }
 function setInstagramConnected(account) {
   const label = document.getElementById('instagram-account-label');
