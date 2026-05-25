@@ -8,7 +8,7 @@
 //    https://YOUR-VERCEL-URL.vercel.app/api/whatsapp-webhook
 // 3. Add WATI_API_URL and WATI_API_TOKEN to Vercel env vars
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {

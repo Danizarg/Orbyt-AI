@@ -74,9 +74,11 @@ module.exports = async function handler(req, res) {
   }
 };
 
+function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
+
 async function getGmailTokens(gmailAddress) {
   const res = await fetch(
-    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={GmailAddress}="${gmailAddress}"`,
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={GmailAddress}="${escAirtable(gmailAddress)}"`,
     { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
   );
   const data = await res.json();
@@ -103,7 +105,7 @@ async function getValidAccessToken(record) {
 
   // Update access token in Airtable
   const searchRes = await fetch(
-    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={GmailAddress}="${record.GmailAddress}"`,
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={GmailAddress}="${escAirtable(record.GmailAddress)}"`,
     { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
   );
   const searchData = await searchRes.json();

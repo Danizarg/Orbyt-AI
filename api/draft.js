@@ -1,7 +1,7 @@
 // api/draft.js — Vercel Serverless Function
 // Uses Groq (free tier) to generate AI replies.
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL || 'https://orbytai.org');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 500, messages: [{ role: 'user', content: prompt }] }),
     });
-    if (!response.ok) { const error = await response.text(); return res.status(502).json({ error: 'AI API error', detail: error }); }
+    if (!response.ok) { console.error('Groq error:', await response.text()); return res.status(502).json({ error: 'AI service error' }); }
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || '';
     return res.status(200).json({ reply });

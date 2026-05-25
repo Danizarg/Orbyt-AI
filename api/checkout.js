@@ -1,6 +1,6 @@
 // api/checkout.js — Creates Stripe checkout session
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL || 'https://orbytai.org');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
       body: params.toString(),
     });
 
-    if (!response.ok) { const err = await response.text(); return res.status(502).json({ error: 'Stripe error', detail: err }); }
+    if (!response.ok) { console.error('Stripe error:', await response.text()); return res.status(502).json({ error: 'Payment service error' }); }
     const session = await response.json();
     return res.status(200).json({ url: session.url });
   } catch (err) { return res.status(500).json({ error: 'Internal server error' }); }

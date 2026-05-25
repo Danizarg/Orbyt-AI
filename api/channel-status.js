@@ -8,8 +8,10 @@ const TABLES = {
   instagram: 'InstagramTokens',
 };
 
+function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL || 'https://orbytai.org');
   const { email, action, provider } = req.query;
   if (!email) return res.status(400).json({ error: 'email required' });
 
@@ -38,7 +40,7 @@ module.exports = async function handler(req, res) {
 
 async function findRecordId(table, userEmail) {
   const res = await fetch(
-    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/${table}?filterByFormula={UserEmail}="${userEmail}"&fields[]=UserEmail`,
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/${table}?filterByFormula={UserEmail}="${escAirtable(userEmail)}"&fields[]=UserEmail`,
     { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
   );
   const data = await res.json();
@@ -57,7 +59,7 @@ async function deleteRecord(table, recordId) {
 async function checkGmail(userEmail) {
   try {
     const res = await fetch(
-      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${userEmail}"`,
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
       { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
     );
     const data = await res.json();
@@ -72,7 +74,7 @@ async function checkGmail(userEmail) {
 async function checkOutlook(userEmail) {
   try {
     const res = await fetch(
-      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${userEmail}"`,
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
       { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
     );
     const data = await res.json();
@@ -87,7 +89,7 @@ async function checkOutlook(userEmail) {
 async function checkInstagram(userEmail) {
   try {
     const res = await fetch(
-      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/InstagramTokens?filterByFormula={UserEmail}="${userEmail}"`,
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/InstagramTokens?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
       { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
     );
     const data = await res.json();

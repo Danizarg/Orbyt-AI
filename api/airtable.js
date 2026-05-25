@@ -7,7 +7,8 @@ async function logMessage({ clientSlug, name, contact, channel, message, reply, 
 }
 async function getMessages(clientSlug, limit = 20) {
   if (!process.env.AIRTABLE_API_KEY) return [];
-  const res = await fetch(`${BASE_URL}/${process.env.AIRTABLE_BASE_ID}/Messages?filterByFormula={ClientSlug}="${clientSlug}"&sort[0][field]=Time&sort[0][direction]=desc&maxRecords=${limit}`, { headers: headers() });
+  const safeSlug = (clientSlug || '').replace(/"/g, '\\"');
+  const res = await fetch(`${BASE_URL}/${process.env.AIRTABLE_BASE_ID}/Messages?filterByFormula={ClientSlug}="${safeSlug}"&sort[0][field]=Time&sort[0][direction]=desc&maxRecords=${limit}`, { headers: headers() });
   const data = await res.json();
   return data.records?.map(r => ({ id: r.id, ...r.fields })) || [];
 }

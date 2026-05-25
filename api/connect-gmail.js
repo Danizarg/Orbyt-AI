@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
   if (action === 'auth') {
     if (provider === 'outlook') {
       if (!process.env.OUTLOOK_CLIENT_ID) {
-        return res.status(500).json({ error: 'Outlook OAuth not configured. Add OUTLOOK_CLIENT_ID to Vercel env vars.' });
+        return res.status(500).json({ error: 'Outlook OAuth not configured' });
       }
       const redirectUri = process.env.OUTLOOK_REDIRECT_URI || process.env.GMAIL_REDIRECT_URI;
       const params = new URLSearchParams({
@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
 
     // Gmail
     if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REDIRECT_URI) {
-      return res.status(500).json({ error: 'Gmail OAuth not configured. Add GMAIL_CLIENT_ID and GMAIL_REDIRECT_URI to Vercel env vars.' });
+      return res.status(500).json({ error: 'Gmail OAuth not configured' });
     }
     const params = new URLSearchParams({
       client_id: process.env.GMAIL_CLIENT_ID,
@@ -121,13 +121,15 @@ module.exports = async function handler(req, res) {
   return res.status(400).json({ error: 'Invalid request. Use ?action=auth to start OAuth flow.' });
 };
 
+function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
+
 // ── Gmail helpers ─────────────────────────────────────────────────────────────
 async function saveGmailTokens(userEmail, gmailAddress, tokens) {
   const baseUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens`;
   const authHeader = { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` };
 
   const searchRes = await fetch(
-    `${baseUrl}?filterByFormula={UserEmail}="${userEmail}"`,
+    `${baseUrl}?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
     { headers: authHeader }
   );
   const searchData = await searchRes.json();
@@ -164,7 +166,7 @@ async function saveOutlookTokens(userEmail, outlookAddress, tokens) {
   const authHeader = { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` };
 
   const searchRes = await fetch(
-    `${baseUrl}?filterByFormula={UserEmail}="${userEmail}"`,
+    `${baseUrl}?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
     { headers: authHeader }
   );
   const searchData = await searchRes.json();

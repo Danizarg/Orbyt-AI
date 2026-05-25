@@ -104,12 +104,14 @@ module.exports = async function handler(req, res) {
   return res.status(400).json({ error: 'Invalid request. Use ?action=auth to start OAuth flow.' });
 };
 
+function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
+
 async function saveInstagramTokens(userEmail, data) {
   const baseUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/InstagramTokens`;
   const authHeader = { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` };
 
   const searchRes = await fetch(
-    `${baseUrl}?filterByFormula={UserEmail}="${userEmail}"`,
+    `${baseUrl}?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
     { headers: authHeader }
   );
   const searchData = await searchRes.json();

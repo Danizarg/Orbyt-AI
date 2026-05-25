@@ -64,6 +64,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .theme-toggle{background:transparent;border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-mute);transition:all .15s;flex-shrink:0}
 .theme-toggle:hover{border-color:var(--border-md);color:var(--text);background:var(--surface-hover)}
 .theme-toggle .theme-icon-light{display:none}
+*:focus-visible{outline:2px solid #6352ff;outline-offset:2px;border-radius:4px}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline-offset:0}
 :root[data-theme="light"] .theme-toggle .theme-icon-dark{display:none}
 :root[data-theme="light"] .theme-toggle .theme-icon-light{display:block}
 

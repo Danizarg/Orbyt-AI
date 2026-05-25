@@ -54,9 +54,11 @@ module.exports = async function handler(req, res) {
   }
 };
 
+function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
+
 async function getInstagramTokens(instagramAccountId) {
   const res = await fetch(
-    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/InstagramTokens?filterByFormula={InstagramAccountId}="${instagramAccountId}"`,
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/InstagramTokens?filterByFormula={InstagramAccountId}="${escAirtable(instagramAccountId)}"`,
     { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
   );
   const data = await res.json();

@@ -8,7 +8,7 @@
 // POST              — send a reply
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL || 'https://orbytai.org');
 
   const { email, action, messageId, provider = 'gmail' } = req.query;
 
@@ -229,10 +229,12 @@ function extractBody(payload) {
   return '';
 }
 
+function escAirtable(val) { return (val || '').replace(/"/g, '\\"'); }
+
 // ── Gmail token helpers ───────────────────────────────────────────────────────
 async function getGmailTokens(userEmail) {
   const res = await fetch(
-    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${userEmail}"`,
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
     { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
   );
   const data = await res.json();
@@ -253,13 +255,25 @@ async function getValidGmailToken(record) {
     }),
   }).then(r => r.json());
   if (t.error) throw new Error('Gmail token refresh failed');
+  const searchRes = await fetch(
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${escAirtable(record.UserEmail)}"`,
+    { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
+  );
+  const existing = (await searchRes.json()).records?.[0];
+  if (existing) {
+    await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens/${existing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` },
+      body: JSON.stringify({ fields: { AccessToken: t.access_token, ExpiresAt: new Date(Date.now() + (t.expires_in || 3600) * 1000).toISOString() } }),
+    });
+  }
   return t.access_token;
 }
 
 // ── Outlook token helpers ─────────────────────────────────────────────────────
 async function getOutlookTokens(userEmail) {
   const res = await fetch(
-    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${userEmail}"`,
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
     { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
   );
   const data = await res.json();
@@ -281,5 +295,17 @@ async function getValidOutlookToken(record) {
     }),
   }).then(r => r.json());
   if (t.error) throw new Error('Outlook token refresh failed');
+  const searchRes = await fetch(
+    `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens?filterByFormula={UserEmail}="${escAirtable(record.UserEmail)}"`,
+    { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
+  );
+  const existing = (await searchRes.json()).records?.[0];
+  if (existing) {
+    await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/OutlookTokens/${existing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` },
+      body: JSON.stringify({ fields: { AccessToken: t.access_token, ExpiresAt: new Date(Date.now() + (t.expires_in || 3600) * 1000).toISOString() } }),
+    });
+  }
   return t.access_token;
 }
