@@ -1,5 +1,6 @@
 // api/webhook.js — Stripe webhook handler
 const crypto = require('crypto');
+const { updateClientStatus } = require('./airtable');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -45,6 +46,21 @@ module.exports = async function handler(req, res) {
         await saveToAirtable(customerEmail, plan, subscriptionId);
       }
     }
+
+    // Subscription cancelled or fully deleted → block access
+    if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object;
+      await updateClientStatus(sub.id, 'Inactive');
+    }
+
+    // Subscription status changed (e.g. past_due, unpaid, active)
+    if (event.type === 'customer.subscription.updated') {
+      const sub = event.data.object;
+      const stripeStatus = sub.status; // active | past_due | unpaid | canceled | trialing
+      const orbytStatus = (stripeStatus === 'active' || stripeStatus === 'trialing') ? 'Active' : 'Inactive';
+      await updateClientStatus(sub.id, orbytStatus);
+    }
+
     return res.status(200).json({ received: true });
   } catch (err) {
     console.error('Stripe webhook error:', err.message);

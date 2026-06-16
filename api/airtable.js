@@ -50,6 +50,8 @@ async function getCompanyConfig(userEmail) {
       enabledFeatures:  (f.EnabledFeatures || 'inbox,compose,connections,settings').split(',').map(s => s.trim()).filter(Boolean),
       businessContext:  f.BusinessContext || '',
       plan:             f.Plan || 'free',
+      status:           f.Status || 'Active',
+      stripeSubscriptionId: f.StripeSubscriptionId || '',
       language:         f.Language || 'en',
       role:             userRecord.fields.Role || 'staff',
     };
@@ -58,4 +60,25 @@ async function getCompanyConfig(userEmail) {
   }
 }
 
-module.exports = { logMessage, getMessages, getCompanyConfig };
+// Update a client's subscription status by their Stripe subscription ID.
+async function updateClientStatus(subscriptionId, status) {
+  if (!process.env.AIRTABLE_API_KEY || !subscriptionId) return;
+  const BASE = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}`;
+  const hdrs = headers();
+  // Find the client record with this subscription ID
+  const searchRes = await fetch(
+    `${BASE}/Clients?filterByFormula={StripeSubscriptionId}="${esc(subscriptionId)}"&maxRecords=1`,
+    { headers: hdrs }
+  );
+  const searchData = await searchRes.json();
+  const record = searchData.records?.[0];
+  if (!record) return;
+  // Update the Status field
+  await fetch(`${BASE}/Clients/${record.id}`, {
+    method: 'PATCH',
+    headers: hdrs,
+    body: JSON.stringify({ fields: { Status: status } }),
+  });
+}
+
+module.exports = { logMessage, getMessages, getCompanyConfig, updateClientStatus };

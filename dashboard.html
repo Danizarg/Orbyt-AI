@@ -477,6 +477,23 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0
   </div>
 </div>
 
+<!-- SUBSCRIPTION EXPIRED -->
+<div id="screen-expired" class="auth-wrap" style="display:none;">
+  <div class="auth-card" style="max-width:440px;text-align:center;">
+    <div class="auth-logo">Orbyt <span>AI</span></div>
+    <div style="font-size:36px;margin:16px 0;">⏸</div>
+    <div class="auth-title" style="margin-bottom:8px;">Subscription paused</div>
+    <div class="auth-sub" style="margin-bottom:24px;">Your access has been suspended because the monthly subscription is no longer active. Renew to regain full access instantly.</div>
+    <button class="auth-btn primary" id="renew-btn" onclick="renewSubscription()">Renew subscription</button>
+    <div style="margin-top:16px;font-size:13px;color:var(--text-secondary);">
+      Questions? <a href="mailto:daniel.zarghoum@gmail.com" style="color:var(--accent);">Contact support</a>
+    </div>
+    <div style="margin-top:24px;">
+      <a onclick="signOut()" style="font-size:13px;color:var(--text-secondary);cursor:pointer;">Sign out</a>
+    </div>
+  </div>
+</div>
+
 <!-- MAIN APP -->
 <div id="app">
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -1446,15 +1463,32 @@ function toggleSidebar() {
 }
 
 function showScreen(name) {
-  document.getElementById('screen-login').style.display  = name==='login'  ? 'flex' : 'none';
-  document.getElementById('screen-signup').style.display = name==='signup' ? 'flex' : 'none';
-  document.getElementById('screen-reset').style.display  = name==='reset'  ? 'flex' : 'none';
+  document.getElementById('screen-login').style.display   = name==='login'   ? 'flex' : 'none';
+  document.getElementById('screen-signup').style.display  = name==='signup'  ? 'flex' : 'none';
+  document.getElementById('screen-reset').style.display   = name==='reset'   ? 'flex' : 'none';
+  document.getElementById('screen-expired').style.display = name==='expired' ? 'flex' : 'none';
   document.getElementById('app').style.display = 'none';
 }
 
 function showApp() {
-  ['screen-login','screen-signup','screen-reset'].forEach(id => document.getElementById(id).style.display='none');
+  ['screen-login','screen-signup','screen-reset','screen-expired'].forEach(id => document.getElementById(id).style.display='none');
   document.getElementById('app').style.display = 'flex';
+}
+
+async function renewSubscription() {
+  const btn = document.getElementById('renew-btn');
+  btn.disabled = true; btn.textContent = 'Loading...';
+  try {
+    const email = currentUser?.email || '';
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: companyConfig?.plan || 'pro', email }),
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else { btn.disabled = false; btn.textContent = 'Renew subscription'; showToast('Could not start checkout. Contact support.'); }
+  } catch { btn.disabled = false; btn.textContent = 'Renew subscription'; showToast('Error. Please try again.'); }
 }
 
 function loadUser(user) {
@@ -1796,6 +1830,12 @@ async function loadChannelStatus(email) {
 }
 
 function applyCompanyConfig(cfg) {
+  // Gate access: if subscription is inactive, show the expired screen
+  if (cfg.status && cfg.status !== 'Active') {
+    showScreen('expired');
+    return;
+  }
+
   // Company name in header
   if (cfg.companyName) {
     const bizNameEl = document.getElementById('dash-biz-name');
