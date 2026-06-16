@@ -1,8 +1,9 @@
 // api/channel-status.js
-// GET  ?email=...                                 — which channels are connected
+// GET  ?email=...                                 — connected channels + company config
 // POST { action:'disconnect', provider, email }   — delete tokens for that provider
 
 const { verifyAuth } = require('./_auth');
+const { getCompanyConfig } = require('./airtable');
 
 const TABLES = {
   gmail: 'GmailTokens',
@@ -44,13 +45,14 @@ module.exports = async function handler(req, res) {
   if (!email) return res.status(400).json({ error: 'email required' });
   if (authedEmail && authedEmail !== email) return res.status(403).json({ error: 'Forbidden' });
 
-  const [gmail, outlook, instagram] = await Promise.all([
+  const [gmail, outlook, instagram, companyConfig] = await Promise.all([
     checkGmail(email),
     checkOutlook(email),
     checkInstagram(email),
+    getCompanyConfig(email),
   ]);
 
-  return res.json({ gmail, outlook, instagram });
+  return res.json({ gmail, outlook, instagram, companyConfig });
 };
 
 async function findRecordId(table, userEmail) {

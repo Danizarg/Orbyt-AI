@@ -1414,6 +1414,7 @@ const orbytAuth = _sb(
 const ADMIN_EMAILS = ['danizarg@gmail.com'];
 const VALID_PROVIDERS = ['gmail', 'outlook'];
 let currentUser = null, currentMsgText = '', currentMsgChannel = '', currentMsgTo = '', currentMsgSubject = '', currentMsgThreadId = '', currentMsgProvider = 'gmail';
+let companyConfig = null;
 
 async function authFetch(url, opts = {}) {
   const { data: { session } } = await orbytAuth.auth.getSession();
@@ -1579,7 +1580,7 @@ function showAdminSection(id) {
 
 async function draftReply() {
   const input = document.getElementById('compose-input').value.trim();
-  const context = document.getElementById('compose-context').value.trim();
+  const context = document.getElementById('compose-context').value.trim() || (companyConfig?.businessContext || '');
   const channel = document.getElementById('compose-channel').value;
   if (!input) { showToast('Paste a customer message first'); return; }
   const btn=document.getElementById('draft-btn'), spinner=document.getElementById('draft-spinner'), output=document.getElementById('ai-output');
@@ -1779,12 +1780,60 @@ async function loadChannelStatus(email) {
   try {
     const res = await authFetch('/api/channel-status?email=' + encodeURIComponent(email));
     const data = await res.json();
+
+    // Apply company config if this user belongs to a company
+    if (data.companyConfig) {
+      companyConfig = data.companyConfig;
+      applyCompanyConfig(companyConfig);
+    }
+
     const providers = [];
     if (data.gmail?.connected) { setGmailConnected(data.gmail.inbox); providers.push('gmail'); }
     if (data.outlook?.connected) { setOutlookConnected(data.outlook.inbox); providers.push('outlook'); }
     if (data.instagram?.connected) setInstagramConnected(data.instagram.account);
     if (providers.length) loadRealEmails(email, providers);
   } catch(e) {}
+}
+
+function applyCompanyConfig(cfg) {
+  // Company name in header
+  if (cfg.companyName) {
+    const bizNameEl = document.getElementById('dash-biz-name');
+    const userNameEl = document.getElementById('user-name');
+    const initialsEl = document.getElementById('user-initials');
+    if (bizNameEl) bizNameEl.textContent = cfg.companyName + ' — Dashboard';
+    if (userNameEl) userNameEl.textContent = cfg.companyName;
+    if (initialsEl) initialsEl.textContent = cfg.companyName.slice(0, 2).toUpperCase();
+  }
+
+  // Brand color override
+  if (cfg.primaryColor) {
+    document.documentElement.style.setProperty('--accent', cfg.primaryColor);
+    document.documentElement.style.setProperty('--accent-hover', cfg.primaryColor + 'cc');
+  }
+
+  // Logo in sidebar
+  if (cfg.logo) {
+    const logoEl = document.getElementById('sidebar-logo');
+    if (logoEl) {
+      logoEl.innerHTML = `<img src="${cfg.logo}" alt="${cfg.companyName}" style="height:28px;object-fit:contain;">`;
+    }
+  }
+
+  // Hide channels not in their plan
+  const allChannelIds = {
+    gmail:     ['connect-gmail-btn', 'gmail-section'],
+    outlook:   ['connect-outlook-btn', 'outlook-section'],
+    instagram: ['connect-instagram-btn', 'instagram-section'],
+    whatsapp:  ['connect-whatsapp-btn', 'whatsapp-section'],
+  };
+  Object.entries(allChannelIds).forEach(([channel, ids]) => {
+    const enabled = cfg.enabledChannels.includes(channel);
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = enabled ? '' : 'none';
+    });
+  });
 }
 
 async function loadRealEmails(userEmail, providers) {
