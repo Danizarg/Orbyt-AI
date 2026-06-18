@@ -25,6 +25,7 @@
     { "source": "/api/instagram-webhook",   "destination": "/api/instagram-webhook.js" },
     { "source": "/api/whatsapp-webhook", "destination": "/api/whatsapp-webhook.js" },
     { "source": "/privacy",               "destination": "/privacy.html" },
+    { "source": "/terms",                 "destination": "/terms.html" },
     { "source": "/dashboard",            "destination": "/dashboard.html" },
     { "source": "/app",                  "destination": "/dashboard.html" },
     { "source": "/contact",              "destination": "/contact.html" }
