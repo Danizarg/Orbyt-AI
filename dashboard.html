@@ -1441,8 +1441,35 @@ async function authFetch(url, opts = {}) {
 }
 function safeProvider(p) { return VALID_PROVIDERS.includes(p) ? p : 'gmail'; }
 
+// Hardcoded demo configs — loaded via ?demo=caretaker (no login, no Airtable needed)
+const DEMO_CONFIGS = {
+  caretaker: {
+    slug: 'demo-caretaker',
+    companyName: 'Your Care Company',
+    primaryColor: '#3B82C4',
+    logo: '',
+    enabledChannels: ['gmail', 'whatsapp'],
+    enabledFeatures: ['inbox', 'compose', 'settings'],
+    businessContext: 'We are a professional elderly care company. Our tone is warm, caring, and reassuring. We help families feel confident their loved ones are in good hands.',
+    plan: 'pro',
+    status: 'Active',
+    role: 'admin',
+    isDemo: true,
+  },
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Demo mode: ?demo=caretaker — no login required
+  const demoKey = new URLSearchParams(window.location.search).get('demo');
+  if (demoKey && DEMO_CONFIGS[demoKey]) {
+    companyConfig = DEMO_CONFIGS[demoKey];
+    applyCompanyConfig(companyConfig);
+    loadDemoUser(companyConfig);
+    return;
+  }
+
   const { data: { session } } = await orbytAuth.auth.getSession();
   if (session?.user) loadUser(session.user);
   else showScreen('login');
@@ -1451,6 +1478,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     else if (event === 'SIGNED_OUT') { window.location.href = '/'; }
   });
 });
+
+function loadDemoUser(cfg) {
+  currentUser = { email: 'demo@orbytai.org' };
+  document.getElementById('account-email').textContent = 'demo@orbytai.org';
+  document.getElementById('account-business').value = cfg.companyName;
+  showApp();
+  showSection('dashboard');
+
+  // Populate inbox with realistic demo messages
+  const feed = document.getElementById('inbox-feed');
+  if (feed) {
+    const demoMessages = [
+      { name: 'Maria van den Berg', subject: 'Medication schedule for my mother', time: '9m ago', badge: 'WhatsApp', new: true },
+      { name: 'Jan Pietersen',      subject: 'Visit cancelled for Thursday',      time: '42m ago', badge: 'Gmail',    new: true },
+      { name: 'Sophie Jansen',      subject: 'Extra help needed this weekend',    time: '2h ago',  badge: 'WhatsApp', new: false },
+      { name: 'Peter de Vries',     subject: 'Question about the care report',    time: '5h ago',  badge: 'Gmail',    new: false },
+      { name: 'Lena Bakker',        subject: 'Thank you for everything last week','time': 'Yesterday', badge: 'WhatsApp', new: false },
+    ];
+    const colors = [['var(--blue-bg)','var(--blue-text)'],['var(--green-bg)','var(--green-text)'],['var(--purple-bg)','var(--purple-text)'],['var(--pink-bg)','var(--pink-text)'],['var(--amber-bg)','var(--amber-text)']];
+    feed.innerHTML = demoMessages.map((m, i) => {
+      const [bg, fg] = colors[i % colors.length];
+      const avatar = `<div class="feed-avatar" style="background:${bg};color:${fg};">${m.name.slice(0,2).toUpperCase()}</div>`;
+      const newBadge = m.new ? '<span style="font-size:10px;background:var(--coral-bg);color:var(--coral-text);padding:1px 6px;border-radius:8px;font-weight:600;">New</span>' : '';
+      const provBadge = `<span style="font-size:10px;background:var(--blue-bg);color:var(--blue-text);padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">${m.badge}</span>`;
+      return `<div class="feed-item"><div class="feed-body" style="display:flex;align-items:center;gap:10px;">${avatar}<div><div class="feed-name">${m.name}${provBadge}${newBadge}</div><div class="feed-msg">${m.subject}</div></div></div><div class="feed-time">${m.time}</div></div>`;
+    }).join('');
+  }
+
+  // Show a demo banner
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+  banner.textContent = 'Demo preview — messages and data are examples';
+  document.body.appendChild(banner);
+}
 
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar-client').style.display !== 'none'
