@@ -1411,7 +1411,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0
 
       <!-- ROUTE PLANNER -->
       <div id="section-route" class="view">
-        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Route planner</div><div class="page-sub">Optimise your daily care route with Google Maps</div></div></div>
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Route planner</div><div class="page-sub">Interactive map · paste Google Maps links · optimised order</div></div></div>
         <div style="padding:0 24px 24px;">
           <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start;" id="route-grid">
             <div>
@@ -1427,9 +1427,9 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0
               </div>
             </div>
             <div>
-              <div id="route-map" style="height:420px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;">
-                <div style="text-align:center;color:var(--text2);">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 010 16c-4 0-8-5-8-8s4-8 8-8z"/></svg>
+              <div id="route-map" style="height:440px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);overflow:hidden;position:relative;">
+                <div id="route-map-placeholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--text2);pointer-events:none;">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.35;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 010 16c-4 0-8-5-8-8s4-8 8-8z"/></svg>
                   <div style="font-size:13px;">Enter addresses and click Calculate</div>
                 </div>
               </div>
@@ -2116,13 +2116,16 @@ window.disconnectGmail=disconnectGmail; window.disconnectOutlook=disconnectOutlo
 window.toggleTheme=toggleTheme;
 window.optimizeRoute=optimizeRoute; window.addStop=addStop; window.removeStop=removeStop;
 
-// ── Route Planner ─────────────────────────────────────────────────────────────
+// ── Route Planner (Leaflet + OSM + OSRM — no API key required) ───────────────
+let _leafletReady = false;
+let _routeMap = null;
+
 function parseGoogleMapsUrl(text) {
   try {
     const url = new URL(text.trim());
     const placeMatch = url.pathname.match(/\/maps\/place\/([^/@]+)/);
-    if (placeMatch) return decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
-    const q = url.searchParams.get('q');
+    if (placeMatch) return decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
+    const q = url.searchParams.get('q') || url.searchParams.get('daddr');
     if (q) return q;
   } catch {}
   return null;
@@ -2149,10 +2152,7 @@ function addStop(value) {
   row.querySelector('input').focus();
 }
 
-function removeStop(btn) {
-  btn.closest('div').remove();
-  renumberStops();
-}
+function removeStop(btn) { btn.closest('div').remove(); renumberStops(); }
 
 function renumberStops() {
   document.querySelectorAll('#route-stops-list > div').forEach((row, i) => {
@@ -2161,75 +2161,141 @@ function renumberStops() {
   });
 }
 
+function loadLeaflet() {
+  if (_leafletReady) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = () => { _leafletReady = true; resolve(); };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function geocode(address) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
+  const r = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+  const data = await r.json();
+  if (!data.length) throw new Error(`Could not find: "${address}"`);
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: data[0].display_name };
+}
+
 async function optimizeRoute() {
   const errEl = document.getElementById('route-error');
   errEl.style.display = 'none';
 
-  const origin = (document.getElementById('route-origin').value || '').trim();
-  const stops = [...document.querySelectorAll('.route-stop-input')].map(i => i.value.trim()).filter(Boolean);
+  const originVal = (document.getElementById('route-origin').value || '').trim();
+  const stopVals  = [...document.querySelectorAll('.route-stop-input')].map(i => i.value.trim()).filter(Boolean);
 
-  if (!origin) { errEl.textContent = 'Enter a starting address.'; errEl.style.display = 'block'; return; }
-  if (!stops.length) { errEl.textContent = 'Add at least one destination.'; errEl.style.display = 'block'; return; }
+  if (!originVal) { errEl.textContent = 'Enter a starting address.'; errEl.style.display = 'block'; return; }
+  if (!stopVals.length) { errEl.textContent = 'Add at least one destination.'; errEl.style.display = 'block'; return; }
 
   const btn = document.getElementById('route-btn');
-  btn.disabled = true; btn.textContent = 'Calculating…';
+  btn.disabled = true; btn.textContent = 'Resolving links…';
   document.getElementById('route-results').innerHTML = '';
 
   try {
-    const res = await authFetch('/api/draft', {
+    // 1. Server resolves any goo.gl / Maps short links → plain text addresses
+    const resolveRes = await authFetch('/api/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'route', origin, stops }),
+      body: JSON.stringify({ action: 'route', origin: originVal, stops: stopVals }),
     });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || 'Route failed');
+    const resolved = await resolveRes.json();
+    if (!resolveRes.ok || resolved.error) throw new Error(resolved.error || 'Server error');
+    const { origin: resolvedOrigin, stops: resolvedStops } = resolved;
 
-    const { origin: resolvedOrigin, orderedStops, legs } = data;
-    const allPoints = [resolvedOrigin, ...orderedStops, resolvedOrigin];
-    const dirUrl = 'https://www.google.com/maps/dir/' + allPoints.map(p => encodeURIComponent(p)).join('/');
+    // 2. Load Leaflet
+    btn.textContent = 'Loading map…';
+    await loadLeaflet();
 
-    // Embed API gives a proper rendered map; fall back to /maps/dir/ if no key
-    const mapEl = document.getElementById('route-map');
-    const embedKey = window._mapsApiKey;
-    if (embedKey) {
-      const embedUrl = 'https://www.google.com/maps/embed/v1/directions'
-        + '?key=' + encodeURIComponent(embedKey)
-        + '&origin=' + encodeURIComponent(resolvedOrigin)
-        + '&destination=' + encodeURIComponent(resolvedOrigin)
-        + (orderedStops.length ? '&waypoints=' + orderedStops.map(encodeURIComponent).join('|') : '')
-        + '&mode=driving';
-      mapEl.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" style="border:0;display:block;" allowfullscreen referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>`;
-    } else {
-      mapEl.innerHTML = `<iframe src="${dirUrl}" width="100%" height="100%" style="border:0;display:block;" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>`;
+    // 3. Geocode all addresses (Nominatim, free)
+    btn.textContent = 'Geocoding…';
+    const allAddrs = [resolvedOrigin, ...resolvedStops];
+    const coords = [];
+    for (const addr of allAddrs) {
+      coords.push(await geocode(addr));
+      if (allAddrs.length > 2) await new Promise(r => setTimeout(r, 250)); // Nominatim rate limit
     }
 
-    const totalDistM = legs.reduce((s, l) => s + l.distanceM, 0);
-    const totalSec   = legs.reduce((s, l) => s + l.durationSec, 0);
+    // 4. Optimise with OSRM (free public routing engine)
+    btn.textContent = 'Optimising route…';
+    const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
+    const osrmUrl = `https://router.project-osrm.org/trip/v1/driving/${coordStr}?roundtrip=true&source=first&geometries=geojson&overview=full&annotations=false`;
+    const osrmRes = await fetch(osrmUrl);
+    const osrm = await osrmRes.json();
+    if (osrm.code !== 'Ok') throw new Error('Route optimisation failed');
 
-    const stopRows = orderedStops.map((addr, i) => `
-      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${i < orderedStops.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i + 1}</div>
+    // OSRM waypoints[i].waypoint_index = position in optimised trip for original stop i
+    const orderMap = new Array(coords.length);
+    osrm.waypoints.forEach((wp, originalIdx) => { orderMap[wp.waypoint_index] = originalIdx; });
+    const orderedCoords  = orderMap.map(i => coords[i]);
+    const orderedAddrs   = orderMap.map(i => allAddrs[i]);
+    const orderedStops   = orderedAddrs.slice(1); // skip origin (index 0)
+    const trip           = osrm.trips[0];
+    const legs           = trip.legs;
+    const totalDist      = legs.reduce((s, l) => s + l.distance, 0);
+    const totalDur       = legs.reduce((s, l) => s + l.duration, 0);
+
+    // 5. Draw map
+    const mapEl = document.getElementById('route-map');
+    const placeholder = document.getElementById('route-map-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+
+    if (_routeMap) { _routeMap.remove(); _routeMap = null; }
+    _routeMap = L.map(mapEl, { zoomControl: true, attributionControl: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(_routeMap);
+
+    // Draw route line
+    L.geoJSON(trip.geometry, { style: { color: '#6352ff', weight: 4, opacity: 0.85 } }).addTo(_routeMap);
+
+    // Draw markers
+    const bounds = [];
+    orderedCoords.forEach((c, routePos) => {
+      bounds.push([c.lat, c.lng]);
+      const isBase = routePos === 0;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:30px;height:30px;background:${isBase ? '#22c55e' : '#6352ff'};color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${isBase ? '14' : '11'}px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.28);border:2px solid #fff;">${isBase ? '⌂' : routePos}</div>`,
+        iconSize: [30, 30], iconAnchor: [15, 15],
+      });
+      L.marker([c.lat, c.lng], { icon }).bindPopup(`<b>${isBase ? 'Base' : 'Stop ' + routePos}</b><br>${orderedAddrs[routePos]}`).addTo(_routeMap);
+    });
+    _routeMap.fitBounds(bounds, { padding: [28, 28] });
+
+    // 6. Results panel
+    const mapsUrl = 'https://www.google.com/maps/dir/' + [resolvedOrigin, ...orderedStops, resolvedOrigin].map(encodeURIComponent).join('/');
+    const stopRows = orderedStops.map((addr, i) => {
+      const leg = legs[i];
+      return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${i < orderedStops.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i + 1}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${addr.replace(/"/g,'&quot;')}">${addr}</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${legs[i].duration} · ${legs[i].distance} from previous</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${addr.replace(/"/g,'')}">${addr}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${Math.round(leg.duration / 60)} min · ${(leg.distance / 1000).toFixed(1)} km from previous</div>
         </div>
-      </div>`).join('');
-
+      </div>`;
+    }).join('');
     const returnLeg = legs[legs.length - 1];
+
     document.getElementById('route-results').innerHTML = `
       <div class="card">
         <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
-          <div class="card-title" style="margin-bottom:0;">Optimal route — ${orderedStops.length} stop${orderedStops.length !== 1 ? 's' : ''}</div>
-          <div style="font-size:12px;color:var(--text2);">${(totalDistM / 1000).toFixed(1)} km · ~${Math.round(totalSec / 60)} min</div>
+          <div class="card-title" style="margin-bottom:0;">Optimised route — ${orderedStops.length} stop${orderedStops.length !== 1 ? 's' : ''}</div>
+          <div style="font-size:12px;color:var(--text2);">${(totalDist / 1000).toFixed(1)} km · ~${Math.round(totalDur / 60)} min</div>
         </div>
-        <a href="${dirUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;padding:5px 12px;border:1px solid var(--accent);border-radius:6px;transition:background 0.15s ease-out,color 0.15s ease-out;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Open in Google Maps</a>
+        <a href="${mapsUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;padding:5px 12px;border:1px solid var(--accent);border-radius:6px;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Open in Google Maps</a>
         ${stopRows}
         <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;">
-          <div style="width:26px;height:26px;border-radius:50%;background:var(--green-bg);color:var(--green-text);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">↩</div>
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:var(--text);">Return to base</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:2px;">${returnLeg.duration} · ${returnLeg.distance}</div>
-          </div>
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--green-bg);color:var(--green-text);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">↩</div>
+          <div><div style="font-size:13px;font-weight:500;color:var(--text);">Return to base</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${Math.round(returnLeg.duration / 60)} min · ${(returnLeg.distance / 1000).toFixed(1)} km</div></div>
         </div>
       </div>`;
   } catch (err) {
