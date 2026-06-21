@@ -75,8 +75,10 @@ async function deleteRecord(table, recordId) {
 
 async function checkGmail(userEmail) {
   try {
+    const safe = escAirtable(userEmail);
+    const formula = encodeURIComponent(`OR({UserEmail}="${safe}",FIND("${safe}",{UserEmail})>0)`);
     const res = await fetch(
-      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens?filterByFormula=${formula}&sort[0][field]=ExpiresAt&sort[0][direction]=desc&maxRecords=1`,
       { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
     );
     const data = await res.json();

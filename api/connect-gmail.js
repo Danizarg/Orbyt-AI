@@ -83,7 +83,11 @@ module.exports = async function handler(req, res) {
       }
 
       // Gmail callback
-      const userEmail = state || 'unknown';
+      // State format is {nonce}:{email} for CSRF protection — strip the nonce
+      const rawState = state || '';
+      const userEmail = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:/.test(rawState)
+        ? rawState.slice(37)
+        : rawState || 'unknown';
       const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
