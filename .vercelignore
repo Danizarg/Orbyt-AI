@@ -1,0 +1,4 @@
+.claude/
+misc/
+*.md
+.env*
