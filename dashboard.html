@@ -334,11 +334,15 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0
   #section-instagram > div,
   #section-phone > div,
   #section-widget > div,
+  #section-route > div,
   #section-admin-clients > div,
   #section-admin-revenue > div{padding-left:14px;padding-right:14px}
 
   /* Steps grid */
   .steps{grid-template-columns:1fr}
+  /* Route planner */
+  #route-grid{grid-template-columns:1fr !important}
+  #route-map{height:280px !important}
 
   /* Client/admin metrics */
   #section-admin-clients .metrics,
@@ -538,6 +542,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0
       <div class="nav-item" onclick="showSection('phone')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.09 9a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>Phone &amp; SMS</div>
       <div class="nav-item" onclick="showSection('reviews')"><svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Reviews</div>
       <div class="nav-item" onclick="showSection('calendar')"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</div>
+      <div class="nav-item" id="nav-route" onclick="showSection('route')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 010 16c-4 0-8-5-8-8s4-8 8-8z"/><line x1="12" y1="22" x2="12" y2="18"/></svg>Route planner</div>
       <div class="nav-item" onclick="showSection('widget')"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>Chat widget</div>
       <div class="nav-section">Settings</div>
       <div class="nav-item" onclick="showSection('ai-settings')"><svg class="nav-icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>AI behaviour</div>
@@ -1404,6 +1409,35 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline-offset:0
         </div>
       </div>
 
+      <!-- ROUTE PLANNER -->
+      <div id="section-route" class="view">
+        <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Route planner</div><div class="page-sub">Optimise your daily care route with Google Maps</div></div></div>
+        <div style="padding:0 24px 24px;">
+          <div style="display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start;" id="route-grid">
+            <div>
+              <div class="card" style="margin-bottom:0;">
+                <div class="card-title">Today's stops</div>
+                <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;">Starting from</div>
+                <input id="route-origin" class="field-input" style="margin-bottom:14px;" placeholder="e.g. Hoofdstraat 1, Amsterdam" value="">
+                <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;">Home addresses <span style="font-weight:400;">(one per line)</span></div>
+                <textarea id="route-addresses" class="field-input" rows="11" style="resize:vertical;line-height:1.7;font-family:var(--font);font-size:13px;" placeholder="Keizersgracht 123, Amsterdam&#10;Herengracht 45, Amsterdam&#10;Prinsengracht 67, Amsterdam"></textarea>
+                <button id="route-btn" onclick="optimizeRoute()" style="margin-top:12px;width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:10px 0;font-size:13px;font-weight:600;cursor:pointer;transition:opacity 0.15s ease-out;font-family:var(--font);">Calculate optimal route</button>
+                <div id="route-error" style="display:none;font-size:12px;color:var(--coral-text);margin-top:8px;"></div>
+              </div>
+            </div>
+            <div>
+              <div id="route-map" style="height:420px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <div style="text-align:center;color:var(--text2);">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 010 16c-4 0-8-5-8-8s4-8 8-8z"/></svg>
+                  <div style="font-size:13px;">Enter addresses and click Calculate</div>
+                </div>
+              </div>
+              <div id="route-results" style="margin-top:12px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ADMIN REVENUE -->
       <div id="section-admin-revenue" class="view">
         <div class="page-header" style="margin-bottom:16px;"><div><div class="page-title">Revenue</div><div class="page-sub">Monthly recurring revenue</div></div></div>
@@ -2078,6 +2112,128 @@ window.connectGmail=connectGmail; window.connectOutlook=connectOutlook; window.c
 window.toggleSidebar=toggleSidebar; window.comingSoon=comingSoon;
 window.disconnectGmail=disconnectGmail; window.disconnectOutlook=disconnectOutlook; window.disconnectInstagram=disconnectInstagram; window.disconnectStub=disconnectStub;
 window.toggleTheme=toggleTheme;
+window.optimizeRoute=optimizeRoute;
+
+// ── Route Planner ─────────────────────────────────────────────────────────────
+let _mapsLoaded = false, _mapsLoading = false;
+let _dirSvc = null, _dirRend = null;
+
+function loadMapsScript(apiKey) {
+  return new Promise((resolve, reject) => {
+    window._mapsReadyCb = resolve;
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=_mapsReadyCb`;
+    s.async = true; s.defer = true;
+    s.onerror = () => reject(new Error('Maps script load failed'));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureMaps() {
+  if (_mapsLoaded) return true;
+  if (_mapsLoading) return false;
+  _mapsLoading = true;
+  try {
+    const { apiKey } = await fetch('/api/maps-config').then(r => r.json());
+    if (!apiKey) throw new Error('No API key');
+    await loadMapsScript(apiKey);
+    _mapsLoaded = true;
+    _mapsLoading = false;
+    return true;
+  } catch(e) {
+    _mapsLoading = false;
+    return false;
+  }
+}
+
+function initMapInstance() {
+  if (_dirSvc) return;
+  const mapEl = document.getElementById('route-map');
+  if (!mapEl) return;
+  mapEl.innerHTML = '';
+  const map = new google.maps.Map(mapEl, {
+    center: { lat: 52.37, lng: 4.90 },
+    zoom: 11,
+    disableDefaultUI: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+    mapTypeControl: false,
+  });
+  _dirSvc = new google.maps.DirectionsService();
+  _dirRend = new google.maps.DirectionsRenderer({ map, suppressMarkers: false });
+}
+
+async function optimizeRoute() {
+  const errEl = document.getElementById('route-error');
+  errEl.style.display = 'none';
+
+  const origin = (document.getElementById('route-origin').value || '').trim();
+  const raw = (document.getElementById('route-addresses').value || '').trim();
+  if (!origin) { errEl.textContent = 'Enter a starting address.'; errEl.style.display = 'block'; return; }
+  const stops = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!stops.length) { errEl.textContent = 'Add at least one home address.'; errEl.style.display = 'block'; return; }
+
+  const btn = document.getElementById('route-btn');
+  btn.disabled = true; btn.textContent = 'Calculating…';
+  document.getElementById('route-results').innerHTML = '';
+
+  const ok = await ensureMaps();
+  if (!ok) {
+    btn.disabled = false; btn.textContent = 'Calculate optimal route';
+    errEl.textContent = 'Could not load Google Maps. Check your connection.';
+    errEl.style.display = 'block';
+    return;
+  }
+  initMapInstance();
+
+  _dirSvc.route({
+    origin,
+    destination: origin,
+    waypoints: stops.map(loc => ({ location: loc, stopover: true })),
+    optimizeWaypoints: true,
+    travelMode: google.maps.TravelMode.DRIVING,
+  }, (result, status) => {
+    btn.disabled = false; btn.textContent = 'Calculate optimal route';
+    if (status !== 'OK') {
+      errEl.textContent = 'Route calculation failed: ' + status + '. Check that addresses are correct.';
+      errEl.style.display = 'block';
+      return;
+    }
+    _dirRend.setDirections(result);
+
+    const order = result.routes[0].waypoint_order;
+    const legs = result.routes[0].legs;
+    const totalDist = legs.reduce((s, l) => s + l.distance.value, 0);
+    const totalDur  = legs.reduce((s, l) => s + l.duration.value, 0);
+    const orderedStops = order.map(i => stops[i]);
+
+    const stopRows = orderedStops.map((addr, i) => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${i < orderedStops.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${addr}">${addr}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${legs[i].duration.text} · ${legs[i].distance.text} from previous</div>
+        </div>
+      </div>`).join('');
+
+    const returnLeg = legs[legs.length - 1];
+    document.getElementById('route-results').innerHTML = `
+      <div class="card">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-title" style="margin-bottom:0;">Optimal route — ${orderedStops.length} stops</div>
+          <div style="font-size:12px;color:var(--text2);">${(totalDist/1000).toFixed(1)} km · ~${Math.round(totalDur/60)} min</div>
+        </div>
+        ${stopRows}
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;margin-top:0;">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--green-bg);color:var(--green-text);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">↩</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:500;color:var(--text);">Return to base</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px;">${returnLeg.duration.text} · ${returnLeg.distance.text}</div>
+          </div>
+        </div>
+      </div>`;
+  });
+}
 
 document.querySelectorAll('.nav-item, .user-menu-item, .feed-item').forEach(el => {
   el.setAttribute('role', 'button');
