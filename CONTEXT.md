@@ -93,7 +93,9 @@ How it works:
 4. Calls `google.maps.DirectionsService` with `optimizeWaypoints: true`
 5. Renders the route on a map + ordered stop list with durations
 
-Key detail: Maps API key is fetched from `channel-status` GET response (field `mapsApiKey`), stored as `window._mapsApiKey`. No separate endpoint — that would exceed the 12-function limit.
+Two API keys are used for Maps:
+- `GOOGLE_MAPS_API_KEY` — browser key, restricted to `orbytai.org/*` HTTP referrers. Returned by `channel-status` as `mapsApiKey`, stored as `window._mapsApiKey`. Powers the Maps Embed API iframe in the Route Planner.
+- `GOOGLE_MAPS_SERVER_KEY` — server key, **no HTTP referrer restriction** (or restrict by IP). Used by `api/draft.js` for server-side Directions API calls. Without this, Google returns REQUEST_DENIED because server-to-server calls send no referrer. Create this key in Google Cloud Console → Credentials → API key → restrict by IP or leave unrestricted → enable Directions API only.
 
 ---
 
@@ -102,7 +104,8 @@ Key detail: Maps API key is fetched from `channel-status` GET response (field `m
 Set in Vercel Dashboard → Project Settings → Environment Variables.
 
 Key ones:
-- `GOOGLE_MAPS_API_KEY` — restricted to `orbytai.org/*` in Google Cloud Console. Also powers the Route Planner.
+- `GOOGLE_MAPS_API_KEY` — browser key, restricted to `orbytai.org/*`. Powers the Maps Embed iframe.
+- `GOOGLE_MAPS_SERVER_KEY` — server key, no HTTP referrer restriction. Required for Directions API calls from `api/draft.js`. Create in Google Cloud Console with Directions API enabled.
 - `AIRTABLE_API_KEY` + `AIRTABLE_BASE_ID` — main database
 - `GROQ_API_KEY` — AI drafting
 - `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` — billing
@@ -115,9 +118,9 @@ See `.env.example` for the full list.
 
 ## Known issues / what's next
 
-- **Route Planner**: The Google Maps JS API key needs **Maps JavaScript API** + **Directions API** enabled in Google Cloud Console (check this if the map doesn't load).
-- **Route Planner demo**: The caretaker demo doesn't auto-populate addresses yet — user has to paste them manually. Could pre-fill from Airtable `CompanyConfig`.
-- **Vercel function limit**: At exactly 12. If you need a new API endpoint, consolidate first (e.g. merge `connect-gmail` + `connect-instagram` into `connect.js?provider=gmail`).
+- **Route Planner key**: Must set `GOOGLE_MAPS_SERVER_KEY` in Vercel env vars (a key with no HTTP referrer restriction, Directions API enabled). Without it, server-side calls return REQUEST_DENIED. `GOOGLE_MAPS_API_KEY` (browser key, orbytai.org referrer) is used only for the Embed iframe.
+- **Route Planner demo**: The caretaker demo doesn't auto-populate addresses yet — user pastes them manually. Could pre-fill from Airtable `CompanyConfig`.
+- **Vercel function limit**: Currently 10 functions (2 slots free). If adding a new endpoint, check count first with `ls api/ | grep -v "^_" | wc -l`.
 - **Gmail OAuth**: Working. Tokens stored in Airtable `GmailTokens` table.
 - **Instagram**: Connected but webhook parsing may need tuning for DM threading.
 
