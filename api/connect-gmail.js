@@ -132,8 +132,11 @@ async function saveGmailTokens(userEmail, gmailAddress, tokens) {
   const baseUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/GmailTokens`;
   const authHeader = { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` };
 
+  // Use FIND to match both clean email and legacy {uuid}:email format records
+  const safe = escAirtable(userEmail);
+  const formula = encodeURIComponent(`OR({UserEmail}="${safe}",FIND("${safe}",{UserEmail})>0)`);
   const searchRes = await fetch(
-    `${baseUrl}?filterByFormula={UserEmail}="${escAirtable(userEmail)}"`,
+    `${baseUrl}?filterByFormula=${formula}&sort[0][field]=ExpiresAt&sort[0][direction]=desc&maxRecords=1`,
     { headers: authHeader }
   );
   const searchData = await searchRes.json();

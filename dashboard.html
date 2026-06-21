@@ -2041,12 +2041,14 @@ function checkOAuthCallbacks() {
     showToast('Gmail connected' + (inbox ? ': ' + inbox : '!'));
     window.history.replaceState({}, '', '/dashboard');
     showSection('email');
+    if (currentUser?.email) loadRealEmails(currentUser.email, ['gmail']);
   } else if (connected === 'outlook') {
     const inbox = decodeURIComponent(params.get('inbox') || '');
     setOutlookConnected(inbox);
     showToast('Outlook connected' + (inbox ? ': ' + inbox : '!'));
     window.history.replaceState({}, '', '/dashboard');
     showSection('email');
+    if (currentUser?.email) loadRealEmails(currentUser.email, ['outlook']);
   } else if (connected === 'instagram') {
     const account = decodeURIComponent(params.get('account') || '');
     setInstagramConnected(account);

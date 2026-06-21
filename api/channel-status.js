@@ -82,10 +82,16 @@ async function checkGmail(userEmail) {
       { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
     );
     const data = await res.json();
+    if (data.error) {
+      console.error('checkGmail Airtable error:', JSON.stringify(data.error));
+      return { connected: false };
+    }
     const record = data.records?.[0];
+    console.log(`checkGmail(${userEmail}): found=${!!record}, userEmail=${record?.fields?.UserEmail}`);
     if (!record) return { connected: false };
     return { connected: true, inbox: record.fields.GmailAddress || '' };
-  } catch {
+  } catch (err) {
+    console.error('checkGmail exception:', err.message);
     return { connected: false };
   }
 }
