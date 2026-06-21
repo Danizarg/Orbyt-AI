@@ -2209,28 +2209,38 @@ async function optimizeRoute() {
     if (!resolveRes.ok || resolved.error) throw new Error(resolved.error || 'Server error');
     const { origin: resolvedOrigin, stops: resolvedStops } = resolved;
 
-    // 2. Load Leaflet
+    // 2. Validate — if any address is still a URL, the short link could not be resolved
+    const allResolved = [resolvedOrigin, ...resolvedStops];
+    const stillUrl = allResolved.filter(a => a.startsWith('http'));
+    if (stillUrl.length) {
+      throw new Error(
+        'Could not extract an address from your Maps link. ' +
+        'Open the link, copy the place name, and paste that instead.'
+      );
+    }
+
+    // 3. Load Leaflet
     btn.textContent = 'Loading map…';
     await loadLeaflet();
 
-    // 3. Geocode all addresses (Nominatim, free)
+    // 4. Geocode all addresses (Nominatim, free)
     btn.textContent = 'Geocoding…';
-    const allAddrs = [resolvedOrigin, ...resolvedStops];
+    const allAddrs = allResolved;
     const coords = [];
     for (const addr of allAddrs) {
       coords.push(await geocode(addr));
-      if (allAddrs.length > 2) await new Promise(r => setTimeout(r, 250)); // Nominatim rate limit
+      await new Promise(r => setTimeout(r, 200)); // respect Nominatim 1 req/s limit
     }
 
-    // 4. Optimise with OSRM (free public routing engine)
+    // 5. Optimise with OSRM (free public routing engine)
     btn.textContent = 'Optimising route…';
     const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
     const osrmUrl = `https://router.project-osrm.org/trip/v1/driving/${coordStr}?roundtrip=true&source=first&geometries=geojson&overview=full&annotations=false`;
     const osrmRes = await fetch(osrmUrl);
     const osrm = await osrmRes.json();
-    if (osrm.code !== 'Ok') throw new Error('Route optimisation failed');
+    if (osrm.code !== 'Ok') throw new Error(`Route optimisation failed (${osrm.code || 'check addresses are in the same country'})`);
 
-    // OSRM waypoints[i].waypoint_index = position in optimised trip for original stop i
+    // 6. Parse OSRM response — waypoints[i].waypoint_index = position in optimised trip for original stop i
     const orderMap = new Array(coords.length);
     osrm.waypoints.forEach((wp, originalIdx) => { orderMap[wp.waypoint_index] = originalIdx; });
     const orderedCoords  = orderMap.map(i => coords[i]);
@@ -2241,7 +2251,7 @@ async function optimizeRoute() {
     const totalDist      = legs.reduce((s, l) => s + l.distance, 0);
     const totalDur       = legs.reduce((s, l) => s + l.duration, 0);
 
-    // 5. Draw map
+    // 7. Draw map
     const mapEl = document.getElementById('route-map');
     const placeholder = document.getElementById('route-map-placeholder');
     if (placeholder) placeholder.style.display = 'none';
@@ -2270,7 +2280,7 @@ async function optimizeRoute() {
     });
     _routeMap.fitBounds(bounds, { padding: [28, 28] });
 
-    // 6. Results panel
+    // 8. Results panel
     const mapsUrl = 'https://www.google.com/maps/dir/' + [resolvedOrigin, ...orderedStops, resolvedOrigin].map(encodeURIComponent).join('/');
     const stopRows = orderedStops.map((addr, i) => {
       const leg = legs[i];

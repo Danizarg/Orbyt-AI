@@ -37,14 +37,33 @@ module.exports = async function handler(req, res) {
 async function resolveAddress(str) {
   if (!str || !str.startsWith('http')) return str;
   try {
-    const r = await fetch(str, { redirect: 'follow', signal: AbortSignal.timeout(5000), headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const url = new URL(r.url);
-    const placeMatch = url.pathname.match(/\/maps\/place\/([^/@]+)/);
+    // Mobile UA encourages Google to serve a real 302 instead of a JS redirect page
+    const r = await fetch(str, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(6000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' },
+    });
+    const finalUrl = new URL(r.url);
+
+    // /maps/place/PLACE_NAME/@lat,lng,...
+    const placeMatch = finalUrl.pathname.match(/\/maps\/place\/([^/@]+)/);
     if (placeMatch) return decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
-    const q = url.searchParams.get('q');
+
+    // ?q=ADDRESS or ?daddr=ADDRESS
+    const q = finalUrl.searchParams.get('q') || finalUrl.searchParams.get('daddr');
     if (q) return q;
-    const coordMatch = url.pathname.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+
+    // @lat,lng in path
+    const coordMatch = finalUrl.pathname.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
     if (coordMatch) return `${coordMatch[1]},${coordMatch[2]}`;
+
+    // Fallback: parse the page title — Google Maps pages have "<Place> - Google Maps"
+    const html = await r.text();
+    const titleMatch = html.match(/<title[^>]*>([^<|–-]+?)(?:\s*[-–|]\s*Google Maps)?<\/title>/i);
+    if (titleMatch) {
+      const name = titleMatch[1].trim();
+      if (name && !name.toLowerCase().includes('google maps')) return name;
+    }
   } catch {}
-  return str;
+  return str; // could not resolve — return original so frontend can validate
 }
