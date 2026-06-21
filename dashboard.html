@@ -1915,6 +1915,7 @@ async function loadChannelStatus(email) {
       companyConfig = data.companyConfig;
       applyCompanyConfig(companyConfig);
     }
+    if (data.mapsApiKey) window._mapsApiKey = data.mapsApiKey;
 
     const providers = [];
     if (data.gmail?.connected) { setGmailConnected(data.gmail.inbox); providers.push('gmail'); }
@@ -2132,10 +2133,10 @@ function loadMapsScript(apiKey) {
 async function ensureMaps() {
   if (_mapsLoaded) return true;
   if (_mapsLoading) return false;
+  const apiKey = window._mapsApiKey;
+  if (!apiKey) return false;
   _mapsLoading = true;
   try {
-    const { apiKey } = await fetch('/api/maps-config').then(r => r.json());
-    if (!apiKey) throw new Error('No API key');
     await loadMapsScript(apiKey);
     _mapsLoaded = true;
     _mapsLoading = false;

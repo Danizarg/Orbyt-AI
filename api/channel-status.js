@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
     getCompanyConfig(email),
   ]);
 
-  return res.json({ gmail, outlook, instagram, companyConfig });
+  return res.json({ gmail, outlook, instagram, companyConfig, mapsApiKey: process.env.GOOGLE_MAPS_API_KEY || null });
 };
 
 async function findRecordId(table, userEmail) {
