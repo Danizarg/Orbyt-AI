@@ -2177,10 +2177,31 @@ function loadLeaflet() {
 }
 
 async function geocode(address) {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
-  const r = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+  // Coordinate pair returned by backend from Maps link (e.g. "36.51,-4.88") — use directly
+  const coordMatch = address.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
+  if (coordMatch) {
+    const lat = parseFloat(coordMatch[1]), lng = parseFloat(coordMatch[2]);
+    return { lat, lng, label: address };
+  }
+
+  // Google Geocoding API — finds businesses, schools, hospitals by name
+  // Key comes from channel-status response; browser Referer header satisfies the restriction
+  const gKey = window._mapsApiKey;
+  if (gKey) {
+    try {
+      const gr = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${gKey}`);
+      const gd = await gr.json();
+      if (gd.status === 'OK' && gd.results.length) {
+        const loc = gd.results[0].geometry.location;
+        return { lat: loc.lat, lng: loc.lng, label: gd.results[0].formatted_address };
+      }
+    } catch {}
+  }
+
+  // Fallback: Nominatim (OpenStreetMap, free, no key)
+  const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`, { headers: { 'Accept-Language': 'en' } });
   const data = await r.json();
-  if (!data.length) throw new Error(`Could not find: "${address}"`);
+  if (!data.length) throw new Error(`Could not find "${address}". Try a more specific address or full street address.`);
   return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: data[0].display_name };
 }
 
@@ -2276,7 +2297,7 @@ async function optimizeRoute() {
         html: `<div style="width:30px;height:30px;background:${isBase ? '#22c55e' : '#6352ff'};color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${isBase ? '14' : '11'}px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.28);border:2px solid #fff;">${isBase ? '⌂' : routePos}</div>`,
         iconSize: [30, 30], iconAnchor: [15, 15],
       });
-      L.marker([c.lat, c.lng], { icon }).bindPopup(`<b>${isBase ? 'Base' : 'Stop ' + routePos}</b><br>${orderedAddrs[routePos]}`).addTo(_routeMap);
+      L.marker([c.lat, c.lng], { icon }).bindPopup(`<b>${isBase ? 'Base' : 'Stop ' + routePos}</b><br>${c.label || orderedAddrs[routePos]}`).addTo(_routeMap);
     });
     _routeMap.fitBounds(bounds, { padding: [28, 28] });
 
